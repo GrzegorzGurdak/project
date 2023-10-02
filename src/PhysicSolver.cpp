@@ -1,32 +1,27 @@
 #include "PhysicSolver.h"
 
-#include <iostream>
+
 
 ////ChunkGrid:
 
 ChunkGrid::ChunkGrid(int cS, int wW, int wH) :
     cellSize{ cS }, grid_width{ wW / cS }, grid_height{ wH / cS }, window_width{wW}, window_height{ wH }
 {
-    int gW = wW / cS;
-    int gH = wH / cS;
-    grid = std::vector<std::vector<std::vector<PhysicBody2d*>>>(gW,
-        std::vector<std::vector<PhysicBody2d*>>
-        (gH)
-        );
+    // int gW = wW / cS;
+    // int gH = wH / cS;
+    grid = std::vector<Chunk>(grid_width * grid_height);
 }
 
 void ChunkGrid::assignGrid(std::vector<PhysicBody2d*>& obj) {
     for (auto& i : grid) {
-        for (auto& j : i) {
-            if (j.size() > 0) j.clear();
-        }
+        i.clear();
     }
 
     for (auto& i : obj) {
         int x = i->getPos().x / cellSize;
         int y = i->getPos().y / cellSize;
         if (0 <= x && x < grid_width && 0 <= y && y < grid_height)
-            grid.at(i->getPos().x / cellSize).at(i->getPos().y / cellSize).push_back(i);
+            grid.at(x + y * grid_width).push_back(i);
     }
 }
 
@@ -35,22 +30,19 @@ void ChunkGrid::updateChunkSize(PhysicBody2d* obj) {
         cellSize = obj->getRadius() * 2 ;
         grid_width = window_width / cellSize;
         grid_height = window_height / cellSize;
-        grid = std::vector<std::vector<std::vector<PhysicBody2d*>>>(grid_width,
-            std::vector<std::vector<PhysicBody2d*>>
-            (grid_height)
-            );
+        grid = std::vector<Chunk>(grid_width*grid_height);
     }
 }
 
 void ChunkGrid::update_collision() {
     for (int x{ 1 }; x < grid_width - 1; x++)
         for (int y{ 1 }; y < grid_height - 1; y++) {
-            std::vector<PhysicBody2d*>& cell = grid.at(x).at(y);
-            if (cell.size() != 0)
+            Chunk& cell = grid.at(x + y * grid_width);
+            if (cell.size != 0)
                 for (int i{ -1 }; i < 2; i++)
                     for (int j{ -1 }; j < 2; j++) {
-                        auto& neigh_cell = grid.at(x + i).at(y + j);
-                        if (neigh_cell.size() != 0)
+                        auto& neigh_cell = grid.at(x + i + (y+j) * grid_width);
+                        if (neigh_cell.size != 0)
                             solve_collision(cell, neigh_cell);
                     }
         }
@@ -67,12 +59,12 @@ void ChunkGrid::update_collision_mt() {
         for (int x{ 1 + t*grid_width/split_num}; x < ((t * 2 + 1)* grid_width - 1) / split_num/2 + 1; x++) {
             if (x == grid_width - 1) break;
             for (int y{ 1 }; y < grid_height - 1; y++) {
-                std::vector<PhysicBody2d*>& cell = grid.at(x).at(y);
-                if (cell.size() != 0)
+                Chunk& cell = grid.at(x + y * grid_width);
+                if (cell.size != 0)
                     for (int i{ -1 }; i < 2; i++)
                         for (int j{ -1 }; j < 2; j++) {
-                            auto& neigh_cell = grid.at(x + i).at(y + j);
-                            if (neigh_cell.size() != 0)
+                            auto& neigh_cell = grid.at(x + i + (y+j) * grid_width);
+                            if (neigh_cell.size != 0)
                                 solve_collision(cell, neigh_cell);
                         }
             }
@@ -87,12 +79,12 @@ void ChunkGrid::update_collision_mt() {
         for (int x{ ((t * 2 + 1) * grid_width - 1) / split_num / 2 + 1 }; x < ((t + 1) * grid_width - 1) / split_num + 1; x++) {
             if (x == grid_width - 1) break;
             for (int y{ 1 }; y < grid_height - 1; y++) {
-                std::vector<PhysicBody2d*>& cell = grid.at(x).at(y);
-                if (cell.size() != 0)
+                Chunk& cell = grid.at(x + y * grid_width);
+                if (cell.size != 0)
                     for (int i{ -1 }; i < 2; i++)
                         for (int j{ -1 }; j < 2; j++) {
-                            auto& neigh_cell = grid.at(x + i).at(y + j);
-                            if (neigh_cell.size() != 0)
+                            auto& neigh_cell = grid.at(x + i + (y+j) * grid_width);
+                            if (neigh_cell.size != 0)
                                 solve_collision(cell, neigh_cell);
                         }
             }
@@ -100,9 +92,9 @@ void ChunkGrid::update_collision_mt() {
     }
 }
 
-void ChunkGrid::solve_collision(std::vector<PhysicBody2d*>& central, std::vector<PhysicBody2d*>& neigh) {
-    for (auto& i : central) {
-        for (auto& j : neigh)
+void ChunkGrid::solve_collision(Chunk& central_chunk, Chunk& neighboring_chunk) {
+    for (auto& i : central_chunk) {
+        for (auto& j : neighboring_chunk)
         {
             if (&i != &j) {
                 if (collision_type == DEFAULT) {
@@ -129,9 +121,7 @@ int ChunkGrid::count() {
     int sum{};
 
     for (auto& i : grid) {
-        for (auto& j : i) {
-            sum += j.size();
-        }
+        sum += i.size;
     }
     return sum;
 }

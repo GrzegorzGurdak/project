@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <vector>
 #include <algorithm>
 #include <functional>
@@ -9,6 +10,37 @@
 #include "PhysicLink2d.h"
 
 #include <omp.h>
+
+struct Chunk{
+    PhysicBody2d* objects[10];
+    uint8_t size{ 0 };
+    void push_back(PhysicBody2d* obj) {
+        if(size == 10){
+            std::cout << "Chunk is full" << std::endl;
+            return;
+        }
+        objects[size] = obj;
+        size++;
+    }
+
+    void clear() {
+        size = 0;
+    }
+
+    PhysicBody2d* operator[](int i) {
+        return objects[i];
+    }
+    const PhysicBody2d* operator[](int i) const {
+        return objects[i];
+    }
+
+    PhysicBody2d** begin() {
+        return objects;
+    }
+    PhysicBody2d** end() {
+        return objects + size;
+    }
+};
 
 class ChunkGrid {
 public:
@@ -21,7 +53,7 @@ public:
     void update_collision();
     void update_collision_mt();
 
-    void solve_collision(std::vector<PhysicBody2d*>& central, std::vector<PhysicBody2d*>& neigh);
+    void solve_collision(Chunk& central, Chunk& neigh);
 
     int count();
 
@@ -31,7 +63,7 @@ public:
     void set_collision(std::function<void(PhysicBody2d*, PhysicBody2d*)> fun) { collision_lambda = fun; collision_type = LAMBDA; }
 
 protected:
-    std::vector<std::vector<std::vector<PhysicBody2d*>>> grid;
+    std::vector<Chunk> grid;
     int cellSize;
     int grid_width;
     int grid_height;

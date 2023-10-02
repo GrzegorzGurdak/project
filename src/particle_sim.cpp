@@ -133,7 +133,7 @@ int main()
 		//objectAmountText.setString(std::to_string(sandbox.getObjectAmount()));
 
 		if (mousePressed && clock.getElapsedTime().asMilliseconds() > 10) {
-			for (int i = 0; i < 1; i++)
+			for (int i = 0; i < 10; i++)
 				sandbox.add(
 					new PhysicBody2d(
 						mousePosition + Vec2::random_rad(40), 5.f,//(double)rand() / RAND_MAX * 3 + 2,
