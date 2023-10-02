@@ -23,7 +23,7 @@ namespace ColorConv {
 		//std::cout << "c=" << c << "\n";
 		//std::cout << "x=" << x << "\n";
 		//std::cout << "m=" << m << "\n";
-		return sf::Color((r1 + m) * 255, (g1 + m) * 255, (b1 + m) * 255);
+		return sf::Color(sf::Uint8((r1 + m) * 255.), sf::Uint8((g1 + m) * 255.), sf::Uint8((b1 + m) * 255.));
 	}
 
 	sf::Color hsvToRgb(double h, double s, double v)
@@ -44,7 +44,7 @@ namespace ColorConv {
 		//std::cout << "c=" << c << "\n";
 		//std::cout << "x=" << x << "\n";
 		//std::cout << "m=" << m << "\n";
-		return sf::Color((r1 + m) * 255, (g1 + m) * 255, (b1 + m) * 255);
+		return sf::Color(sf::Uint8((r1 + m) * 255.), sf::Uint8((g1 + m) * 255.), sf::Uint8((b1 + m) * 255.));
 	}
 
 	sf::Color cmyToRgb(double c, double m, double y)
@@ -59,7 +59,7 @@ namespace ColorConv {
 		//std::cout << "c=" << c << "\n";
 		//std::cout << "x=" << x << "\n";
 		//std::cout << "m=" << m << "\n";
-		return sf::Color(r, g, b);
+		return sf::Color((sf::Uint8)r, (sf::Uint8)g, (sf::Uint8)b);
 	}
 
 }

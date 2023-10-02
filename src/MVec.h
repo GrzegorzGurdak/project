@@ -20,6 +20,7 @@ struct Vec2
     float y;
 
     inline Vec2& set(float _x, float _y) { x = _x; y = _y; return *this; }
+    inline Vec2& set(int _x, int _y) { x = float(_x); y = float(_y); return *this; }
 
     Vec2 operator+ (const Vec2 other) const { return Vec2(x + other.x, y + other.y); }
     Vec2 operator- (const Vec2 other) const { return Vec2(x - other.x, y - other.y); }
@@ -43,7 +44,7 @@ struct Vec2
     static const Vec2 RIGHT;
 
     static Vec2 random_rad(float max_radius) {
-        float angle = rand() * 2. * M_PIF / RAND_MAX;
+        float angle = rand() * 2.f * M_PIF / RAND_MAX;
         return Vec2(sinf(angle), cosf(angle)) * (max_radius * rand() / RAND_MAX);
     }
 

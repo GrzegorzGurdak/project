@@ -28,7 +28,7 @@ int main()
 
 	StatElement statElement(font);
 
-	PhysicSolver sandbox(ChunkGrid(5, window.getSize().x, window.getSize().y)); //30,33,36
+	PhysicSolver sandbox(ChunkGrid(4, window.getSize().x, window.getSize().y)); //30,33,36
 	// \/  \/  \/  MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!\/  \/  \/
 	//PhysicSolver sandbox = *PhysicExamples::Sandbox::cloth(window.getSize(), {250,200},10,15); // losing pointer to allocated data
 	PhysicDrawer sandbox_draw(sandbox);
@@ -136,7 +136,7 @@ int main()
 			for (int i = 0; i < 10; i++)
 				sandbox.add(
 					new PhysicBody2d(
-						mousePosition + Vec2::random_rad(40), 5.f,//(double)rand() / RAND_MAX * 3 + 2,
+						mousePosition + Vec2::random_rad(40), 4.f,//(double)rand() / RAND_MAX * 3 + 2,
 						ColorConv::hsvToRgb((sandbox.getObjectAmount() / 5 % 256) / 256., 1, 1)
 					));
 			clock.restart();
@@ -144,10 +144,10 @@ int main()
 		}
 		if (!paused) {
 			auto start = std::chrono::steady_clock::now();
-			sandbox.update(1 / 60., 8);
+			sandbox.update(1 / 60.f, 8);
 			auto end = std::chrono::steady_clock::now();
 
-			statElement.simTimeAdd((std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()));
+			statElement.simTimeAdd(int(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()));
 		}
 
 		statElement.update();

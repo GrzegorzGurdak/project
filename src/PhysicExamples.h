@@ -56,30 +56,30 @@ namespace PhysicExamples {
 	}
 
 	namespace Sandbox {
-		PhysicSolver* cloth(Vec2 windowSize, Vec2 startPos, int sizex, int sizey, float linkLen = 30 ,int ballSize = 10) {
-			PhysicSolver* sandbox = new PhysicSolver(ChunkGrid(33, windowSize.x, windowSize.y));
+		PhysicSolver* cloth(Vec2 windowSize, Vec2 startPos, int sizeX, int sizeY, float linkLen = 30 ,float ballSize = 10.f) {
+			PhysicSolver* sandbox = new PhysicSolver(ChunkGrid(33, (int)windowSize.x, (int)windowSize.y));
 			sandbox->set_constraints(Constrains::boxRestrain(Vec2(30, 30), windowSize - Vec2(30, 30)));
 
 			std::vector<std::vector<PhysicBody2d*>> pBs;
-			//int sizex = 10;
-			//int sizey = 10;
+			//int sizeX = 10;
+			//int sizeY = 10;
 			//Vec2 startPos = { 100,100 };
 			//float linkLen = 30;
-			for (int i = 0; i < sizex; i++) {
+			for (int i = 0; i < sizeX; i++) {
 				pBs.push_back(std::vector<PhysicBody2d*>());
 				Vec2 tmp = startPos + Vec2(linkLen * i, 0.f);
 				PhysicBody2d* upper = new PhysicBody2d(startPos + Vec2(linkLen * i, 0.f), ballSize);
 				upper->isKinematic = false;
 				pBs.back().push_back(upper);
 				sandbox->add(upper);
-				for (int j = 1; j < sizey; j++) {
+				for (int j = 1; j < sizeY; j++) {
 					PhysicBody2d* npb = new PhysicBody2d(startPos + Vec2(linkLen * i, linkLen * j), ballSize);
 					pBs.back().push_back(npb);
 					sandbox->add(npb);
 				}
 			}
-			for (int x = 0; x < sizex - 1; x++)
-				for (int y = 0; y < sizey - 1; y++)
+			for (int x = 0; x < sizeX - 1; x++)
+				for (int y = 0; y < sizeY - 1; y++)
 					for (int i = 0; i < 2; i++)
 						for (int j = 0; j < 2; j++){
 							if(i!=j)
@@ -87,10 +87,10 @@ namespace PhysicExamples {
 									new PhysicLink2d(*pBs.at(x).at(y), *pBs.at(x + i).at(y + j), linkLen)
 								);
 						}
-			for (int x = 0; x < sizex - 1; x++)
+			for (int x = 0; x < sizeX - 1; x++)
 				sandbox->addLink(new PhysicLink2d(*pBs.at(x).back(), *pBs.at(x + 1).back(), linkLen));
 
-			for (int y = 0; y < sizey - 1; y++)
+			for (int y = 0; y < sizeY - 1; y++)
 				sandbox->addLink(new PhysicLink2d(*pBs.back().at(y), *pBs.back().at(y + 1), linkLen));
 
 			return sandbox;
@@ -107,8 +107,8 @@ namespace PhysicExamples {
 				if (j->isKinematic) j->setPos(j->getPos() + diff / diffLen * (dist / 2)); // * 0.5;
 			}
 			else if (dist < 2) {
-				if (i->isKinematic) i->setPos(i->getPos() - diff / diffLen * (dist / 2) * 0.001); // * 0.5; //squishiness
-				if (j->isKinematic) j->setPos(j->getPos() + diff / diffLen * (dist / 2) * 0.001); // * 0.5;
+				if (i->isKinematic) i->setPos(i->getPos() - diff / diffLen * (dist / 2) * 0.001f); // * 0.5; //squishiness
+				if (j->isKinematic) j->setPos(j->getPos() + diff / diffLen * (dist / 2) * 0.001f); // * 0.5;
 			}
 		}
 		void squishy_collision(PhysicBody2d* i, PhysicBody2d* j) {

@@ -18,8 +18,8 @@ void ChunkGrid::assignGrid(std::vector<PhysicBody2d*>& obj) {
     }
 
     for (auto& i : obj) {
-        int x = i->getPos().x / cellSize;
-        int y = i->getPos().y / cellSize;
+        int x = int(i->getPos().x / cellSize);
+        int y = int(i->getPos().y / cellSize);
         if (0 <= x && x < grid_width && 0 <= y && y < grid_height)
             grid.at(x + y * grid_width).push_back(i);
     }
@@ -27,7 +27,7 @@ void ChunkGrid::assignGrid(std::vector<PhysicBody2d*>& obj) {
 
 void ChunkGrid::updateChunkSize(PhysicBody2d* obj) {
     if (obj->getRadius() * 2 > cellSize) {
-        cellSize = obj->getRadius() * 2 ;
+        cellSize = (int)ceil(obj->getRadius() * 2);
         grid_width = window_width / cellSize;
         grid_height = window_height / cellSize;
         grid = std::vector<Chunk>(grid_width*grid_height);
@@ -180,7 +180,7 @@ void PhysicSolver::update_constraints() {
     else if (constraint_type == FUNC) {
         for (auto& i : objects)
             if(i->isKinematic)
-                i->current_position = constratint_fun(i);
+                i->current_position = constraint_fun(i);
     }
 }
 
@@ -219,7 +219,7 @@ void PhysicSolver::set_constraints_def() {
 }
 void PhysicSolver::set_constraints(std::function<Vec2(PhysicBody2d*)> conFun) {
     constraint_type = FUNC;
-    constratint_fun = conFun;
+    constraint_fun = conFun;
 }
 void PhysicSolver::set_constraints() {
     constraint_type = NONE;

@@ -12,10 +12,11 @@
 #include <omp.h>
 
 struct Chunk{
-    PhysicBody2d* objects[10];
+    #define CHUNK_CAPACITY 6
+    PhysicBody2d* objects[CHUNK_CAPACITY];
     uint8_t size{ 0 };
     void push_back(PhysicBody2d* obj) {
-        if(size == 10){
+        if(size == CHUNK_CAPACITY){
             std::cout << "Chunk is full" << std::endl;
             return;
         }
@@ -112,7 +113,7 @@ public:
     std::pair<bool, PhysicBody2d*> pop_from_position(const Vec2& cord);
     std::pair<bool, PhysicBody2d*> get_from_position(const Vec2& cord);
 
-    int getObjectAmount() const { return objects.size(); }
+    size_t getObjectAmount() const { return objects.size(); }
     ChunkGrid& getChunkGrid() { return grid; }
     const std::vector<PhysicBody2d*>& getObjects() const { return objects; }
 
@@ -125,7 +126,7 @@ protected:
     enum { FUNC, NONE, VALUE, DEFAULT } acceleration_type{ NONE }, constraint_type{ DEFAULT };
     Vec2 accelerationValue;
     std::function<Vec2(PhysicBody2d*, std::vector<PhysicBody2d*>&)> acceleration_function;
-    std::function<Vec2(PhysicBody2d*)> constratint_fun;
+    std::function<Vec2(PhysicBody2d*)> constraint_fun;
 };
 
 class PhysicDrawer : public sf::Drawable {
