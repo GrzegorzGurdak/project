@@ -1,5 +1,5 @@
 #include "PhysicSolver.h"
-
+#include <chrono>
 
 
 ////ChunkGrid:
@@ -134,17 +134,35 @@ PhysicSolver& PhysicSolver::add(PhysicBody2d* obj) {
     return *this;
 }
 
-void PhysicSolver::update(const float dtime, const int sub_step) {
+void PhysicSolver::update(long long (&simResult)[6], const float dtime, const int sub_step) {
     float sub_dt = dtime / sub_step;
 
     for (int i = 0; i < sub_step; i++) {
+        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
         update_acceleration();
+        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+        simResult[0] = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+        begin = std::chrono::steady_clock::now();
         update_constraints();
+        end = std::chrono::steady_clock::now();
+        simResult[1] = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+        begin = std::chrono::steady_clock::now();
         update_links();
+        end = std::chrono::steady_clock::now();
+        simResult[2] = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+        begin = std::chrono::steady_clock::now();
         grid.assignGrid(objects);
+        end = std::chrono::steady_clock::now();
+        simResult[3] = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+        begin = std::chrono::steady_clock::now();
         grid.update_collision();
         //grid.update_collision_mt();//multi_thread
+        end = std::chrono::steady_clock::now();
+        simResult[4] = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+        begin = std::chrono::steady_clock::now();
         update_position(sub_dt);
+        end = std::chrono::steady_clock::now();
+        simResult[5] = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
     }
 }
 

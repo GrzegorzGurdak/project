@@ -9,6 +9,7 @@
 #include <SFML/Graphics.hpp>
 #include "PhysicBody2d.h"
 #include "PhysicSolver.h"
+#include "GUI_elements.h"
 
 class ColorMap {
 public:
@@ -29,6 +30,16 @@ public:
 			if (x >= 0 && y >= 0 && x < image.getSize().x && y < image.getSize().y)
 				col = image.getPixel(x, y);
 			deq.push_back(col);
+		}
+	}
+
+	void pour(PhysicSolver& sandbox, StatElement& statElement, int numOfParticle = 9e3){
+		if (sandbox.getObjectAmount() < numOfParticle) {
+			for (int i = 0; i < 5; i++)
+				sandbox.add(
+					new PhysicBody2d(Vec2{ 350, 300 } + Vec2::random_rad(40),
+						(double)rand() / RAND_MAX * 3 + 2, this->getNext()));
+			statElement.objectAmountUpdate(sandbox.getObjectAmount());
 		}
 	}
 

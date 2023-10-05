@@ -52,6 +52,7 @@ target_link_libraries(${PROJECT_NAME} sfml-graphics OpenMP::OpenMP_CXX)
 
 if(OpenMP_CXX_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC )
+    message("found OpenMP")
 else()
     message(SEND_ERROR "OpenMP not found")
 endif()

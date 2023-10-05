@@ -2,7 +2,9 @@
 //
 
 #include <string>
+#include <sstream>
 #include <iostream>
+#include <iomanip>
 
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
@@ -40,6 +42,8 @@ int main()
 	bool paused = false;
 
 	std::pair<bool, PhysicBody2d*> dragBuffer;
+
+	long long simResult[6];
 
 	//srand(time(NULL));
 	srand(5);
@@ -84,6 +88,7 @@ int main()
 				shiftPressed = false;
 			}
 
+
 			if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
 				mousePressed = true;
 				mousePosition.set(event.mouseButton.x, event.mouseButton.y);
@@ -122,35 +127,34 @@ int main()
 			}
 		}
 
-		// if (sandbox.getObjectAmount() < 9e3) {
-		// 	for (int i = 0; i < 5; i++)
-		// 		sandbox.add(
-		// 			new PhysicBody2d(Vec2{ 350, 300 } + Vec2::random_rad(40),
-		// 				(double)rand() / RAND_MAX * 3 + 2, colormap.getNext()));
-		// 	statElement.objectAmountUpdate(sandbox.getObjectAmount());
-		// }
-
-		//objectAmountText.setString(std::to_string(sandbox.getObjectAmount()));
+		// colormap.pour(sandbox, statElement,6e3);
 
 		if (mousePressed && clock.getElapsedTime().asMilliseconds() > 10) {
-			for (int i = 0; i < 10; i++)
-				sandbox.add(
-					new PhysicBody2d(
-						mousePosition + Vec2::random_rad(40), 4.f,//(double)rand() / RAND_MAX * 3 + 2,
-						ColorConv::hsvToRgb((sandbox.getObjectAmount() / 5 % 256) / 256., 1, 1)
-					));
+			for (int i = 0; i < 10; i++){
+				PhysicBody2d* pb = new PhysicBody2d(
+					mousePosition + Vec2::random_rad(40), 4.f,//(double)rand() / RAND_MAX * 3 + 2,
+					ColorConv::hsvToRgb((sandbox.getObjectAmount() / 5 % 256) / 256., 1, 1)
+				);
+				if (shiftPressed) pb->isKinematic = false;
+				sandbox.add(pb);
+			}
+
 			clock.restart();
 			statElement.objectAmountUpdate(sandbox.getObjectAmount());
 		}
 		if (!paused) {
 			auto start = std::chrono::steady_clock::now();
-			sandbox.update(1 / 60.f, 8);
+			sandbox.update(simResult, 1 / 60.f, 8);
 			auto end = std::chrono::steady_clock::now();
 
 			statElement.simTimeAdd(int(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()));
 		}
 
-		statElement.update();
+		for (int i = 0; i < 6; i++)
+			std::cout << simResult[i] << std::setw(6);
+		std::cout << "\n";
+
+		statElement.update(event);
 
 		window.draw(sandbox_draw);
 		if (dragEnable) {
@@ -160,3 +164,5 @@ int main()
 		window.display();
 	}
 }
+
+//ACC | CON | LINK | GRID | COLL | POS

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <algorithm>
 #include <functional>
@@ -12,19 +13,19 @@
 #include <omp.h>
 
 struct Chunk{
-    #define CHUNK_CAPACITY 6
+    #define CHUNK_CAPACITY 5
     PhysicBody2d* objects[CHUNK_CAPACITY];
     uint8_t size{ 0 };
-    void push_back(PhysicBody2d* obj) {
+    inline void push_back(PhysicBody2d* obj) {
         if(size == CHUNK_CAPACITY){
-            std::cout << "Chunk is full" << std::endl;
+            // std::cout << "Chunk is full" << std::endl;
             return;
         }
         objects[size] = obj;
         size++;
     }
 
-    void clear() {
+    inline void clear() {
         size = 0;
     }
 
@@ -89,7 +90,7 @@ public:
     PhysicSolver& add(PhysicBody2d* obj);
     PhysicSolver& addLink(PhysicLink2d* obj) { links.push_back(obj); return *this; }
 
-    void update(const float dtime, const int sub_step = 1);
+    void update(long long (&simResult)[6], const float dtime, const int sub_step = 1);
 
     void update_position(const float dtime);
     void update_acceleration();

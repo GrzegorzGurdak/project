@@ -14,7 +14,7 @@ public:
 	void objectAmountUpdate(size_t objectAmount) { objectAmountText.setString(std::to_string(objectAmount)); }
 	void simTimeAdd(int addSimTimeValue) { simTimeValue += addSimTimeValue; }
 
-	void update() {
+	void update(sf::Event& event) {
 		if (fClock.getElapsedTime().asSeconds() >= 1.0f)
 		{
 			if (frame_counter != 0) {
@@ -30,11 +30,17 @@ public:
 		frame_counter++;
 	}
 
-	void draw(sf::RenderTarget& target, sf::RenderStates states) const {
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
 		target.draw(objectAmountText,states);
 		target.draw(simTime, states);
 		target.draw(fps_text, states);
 	}
+
+	// bool isLMBPressed() { return isLMBPressed; }
+	// bool isRMBPressed() { return isRMBPressed; }
+	// bool isShiftPressed() { return isShiftPressed; }
+	// bool isSpacePressed() { return isSpacePressed; }
+	// bool isCtrlPressed() { return isCtrlPressed; }
 
 
 private:
@@ -46,6 +52,12 @@ private:
 	sf::Text objectAmountText;
 	sf::Text simTime;
 	sf::Text fps_text;
+
+	bool isLMBPressed = false;
+	bool isRMBPressed = false;
+	bool isShiftPressed = false;
+	bool isSpacePressed = false;
+	bool isCtrlPressed = false;
 };
 
 
