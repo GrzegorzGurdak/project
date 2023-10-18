@@ -8,6 +8,7 @@
 
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
+#include <SFML/OpenGL.hpp>
 
 #include <chrono>
 
@@ -18,6 +19,62 @@
 #include "ColorConv.h"
 #include "ImageGenerator.h"
 #include "GUI_elements.h"
+#include <gl/glu.h>
+
+void initOpenGL(void) {
+    glClearColor(1.f, 1.f, 1.f, 0.f);
+}
+
+void reshapeScreen(sf::Vector2u size) {
+    glViewport(0, 0, (GLsizei)size.x, (GLsizei)size.y);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(60.0, (GLdouble)size.x / (GLdouble)size.y, 0.1, 1000.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+
+void drawScreen(sf::Vector2u size) {
+    glClear(GL_COLOR_BUFFER_BIT);
+    glLoadIdentity();
+    gluLookAt(
+        550, 400, 800,
+        400,   300,   0,
+        0,   1,   0
+    );
+}
+
+void drawAxes() {
+    glLineWidth((GLfloat)3);
+    glDisable(GL_LINE_STIPPLE);
+    glBegin(GL_LINES);
+        glColor3f(1, 0, 0);
+        glVertex3f(800, 0, 0);
+        glVertex3f(0, 0, 0);
+
+        glColor3f(0, 1, 0);
+        glVertex3f(0, 700, 0);
+        glVertex3f(0, 0, 0);
+
+        glColor3f(0, 0, 1);
+        glVertex3f(0, 0, 1);
+        glVertex3f(0, 0, 0);
+    glEnd();
+
+    glLineStipple(3, 0xAAAA);
+    glEnable(GL_LINE_STIPPLE);
+    glBegin(GL_LINES);
+        glColor3f(1, 0, 0);
+        glVertex3f(0, 0, 0);
+        glVertex3f(-1, 0, 0);
+        glColor3f(0, 1, 0);
+        glVertex3f(0, 0, 0);
+        glVertex3f(0, -1, 0);
+        glColor3f(0, 0, 1);
+        glVertex3f(0, 0, 0);
+        glVertex3f(0, 0, -1);
+    glEnd();
+}
 
 int main()
 {
@@ -68,6 +125,9 @@ int main()
 	bool dragEnable = false;
 	bool shiftPressed = false;
 	bool kinematicStateBefore;
+
+	reshapeScreen(window.getSize());
+    initOpenGL();
 
 	while (window.isOpen()) {
 		window.clear();
@@ -156,11 +216,15 @@ int main()
 
 		statElement.update(event);
 
+		drawScreen(window.getSize());
+        drawAxes();
 		window.draw(sandbox_draw);
 		if (dragEnable) {
 			dragBuffer.second->move(mousePosition);
 		}
+		window.pushGLStates();
 		window.draw(statElement);
+		window.popGLStates();
 		window.display();
 	}
 }

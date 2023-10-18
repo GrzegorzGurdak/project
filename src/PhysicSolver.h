@@ -39,7 +39,13 @@ struct Chunk{
     PhysicBody2d** begin() {
         return objects;
     }
+    PhysicBody2d* const * begin() const {
+        return objects;
+    }
     PhysicBody2d** end() {
+        return objects + size;
+    }
+    const PhysicBody2d* const * end() const {
         return objects + size;
     }
 };
@@ -63,6 +69,9 @@ public:
     void set_collision() { collision_type = NONE; }
     void set_collision(void (*fun)(PhysicBody2d*, PhysicBody2d*)) { collision_function = fun; collision_type = FUNC; }
     void set_collision(std::function<void(PhysicBody2d*, PhysicBody2d*)> fun) { collision_lambda = fun; collision_type = LAMBDA; }
+
+    std::vector<Chunk>& getGrid() { return grid; }
+    const std::vector<Chunk>& getGrid() const { return grid; }
 
 protected:
     std::vector<Chunk> grid;
@@ -116,6 +125,7 @@ public:
 
     size_t getObjectAmount() const { return objects.size(); }
     ChunkGrid& getChunkGrid() { return grid; }
+    const ChunkGrid& getChunkGrid() const { return grid; }
     const std::vector<PhysicBody2d*>& getObjects() const { return objects; }
 
 protected:
