@@ -46,8 +46,9 @@ file(GLOB sources "src/*.cpp")
 
 find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 find_package(OpenMP)
+find_package(OpenGL)
 add_executable(${PROJECT_NAME} ${sources})
-target_link_libraries(${PROJECT_NAME} sfml-graphics OpenMP::OpenMP_CXX)
+target_link_libraries(${PROJECT_NAME} sfml-graphics OpenMP::OpenMP_CXX OpenGL::GLU)
 
 
 if(OpenMP_CXX_FOUND)

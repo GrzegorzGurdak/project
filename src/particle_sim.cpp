@@ -8,6 +8,7 @@
 
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
+#include <SFML/OpenGL.hpp>
 
 #include <chrono>
 
@@ -18,6 +19,7 @@
 #include "ColorConv.h"
 #include "ImageGenerator.h"
 #include "GUI_elements.h"
+#include <gl/glu.h>
 
 int main()
 {

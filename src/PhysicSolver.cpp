@@ -1,6 +1,7 @@
 #include "PhysicSolver.h"
 #include <chrono>
-
+#include <SFML/OpenGL.hpp>
+#include <gl/glu.h>
 
 ////ChunkGrid:
 
@@ -266,9 +267,16 @@ std::pair<bool, PhysicBody2d*> PhysicSolver::get_from_position(const Vec2& cord)
 //PhysicDrawer:
 
 void PhysicDrawer::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-    for (const auto& i : physicSolver.objects)
+    // for (const auto& i : physicSolver.objects)
+    // {
+    //     target.draw(i->getFigure(), states);
+    // }
+    for (const auto& i : physicSolver.getChunkGrid().getGrid())
     {
-        target.draw(i->getFigure(), states);
+        for (const auto& j : i)
+        {
+            target.draw(j->getFigure(), states);
+        }
     }
     for (const auto& i : physicSolver.links)
     {
