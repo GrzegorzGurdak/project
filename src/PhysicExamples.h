@@ -1,5 +1,6 @@
 #pragma once
 
+#include "PhysicSolver.h"
 #include "PhysicBody2d.h"
 #include "MVec.h"
 
@@ -9,11 +10,11 @@ namespace PhysicExamples {
 			return[centre, strength](PhysicBody2d* i, const std::vector<PhysicBody2d*>&) {
 				Vec2 diff = centre - i->getPos();
 				float diffLen = diff.length();
-				
+
 				if(diffLen<1)
 					return Vec2();
 				return diff / diffLen / diffLen * strength;
-				
+
 			};
 		}
 	}
@@ -119,6 +120,29 @@ namespace PhysicExamples {
 				if (i->isKinematic) i->setPos(i->getPos() - diff / diffLen * (dist / 2) * 0.5);
 				if (j->isKinematic) j->setPos(j->getPos() + diff / diffLen * (dist / 2) * 0.5);
 			}
+		}
+	}
+}
+
+
+namespace PhysicExamples3d {
+	namespace Constrains {
+		auto boxRestrain(Vec3 pos1, Vec3 pos2) {
+			Vec3 minPos{ std::fminf(pos1.x,pos2.x),std::fminf(pos1.y,pos2.y), std::fminf(pos1.z,pos2.z) };
+			Vec3 maxPos{ std::fmaxf(pos1.x,pos2.x),std::fmaxf(pos1.y,pos2.y), std::fmaxf(pos1.z,pos2.z) };
+			pos1 = minPos;
+			pos2 = maxPos;
+			return[pos1, pos2](PhysicBody3d* i) {
+				Vec3 npos = i->getPos();
+				//Vec2 radVec{ i.getRadius(),i.getRadius() };
+				if (npos.x < pos1.x + i->getRadius()) npos.x = pos1.x + i->getRadius();
+				else if (npos.x > pos2.x - i->getRadius()) npos.x = pos2.x - i->getRadius();
+				if (npos.y < pos1.y + i->getRadius()) npos.y = pos1.y + i->getRadius();
+				else if (npos.y > pos2.y - i->getRadius()) npos.y = pos2.y - i->getRadius();
+				if (npos.z < pos1.z + i->getRadius()) npos.z = pos1.z + i->getRadius();
+				else if (npos.z > pos2.z - i->getRadius()) npos.z = pos2.z - i->getRadius();
+				return npos;
+			};
 		}
 	}
 }

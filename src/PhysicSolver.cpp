@@ -271,7 +271,7 @@ void PhysicDrawer::draw(sf::RenderTarget& target, sf::RenderStates states) const
     // {
     //     target.draw(i->getFigure(), states);
     // }
-    glPointSize(4.f);
+    glPointSize(6.f);
     glBegin(GL_POINTS);
     for (const auto& i : physicSolver.getChunkGrid().getGrid())
     {
