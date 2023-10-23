@@ -52,19 +52,11 @@ std::ostream& operator<< (std::ostream& out, const Vec3&& obj)
 	return out << "(" << obj.x << ", " << obj.y << ", " << obj.z << ")";
 }
 
+//function to calculate angle between two 3D vectors
 float Vec3::angleBetween(Vec3 base, Vec3 target)
 {
-	// float det = (target.x * base.y - target.y * base.x);
-	// float det = (target.x * base.y)
+	float dot = base.x * target.x + base.y * target.y + base.z * target.z;
+	float det = base.x * target.y - base.y * target.x + base.x * target.z - base.z * target.x + base.y * target.z - base.z * target.y;
 
-	// float dot = (target.x * base.x + target.y * base.y + target.z * base.z);
-
-
-	////if(det>0 && dot > 0) return atan2f(det, dot) * 180 / M_PI;
-
-	////if(dot>0) return atan2f(det, dot) * 180 / M_PI; // det<0
-
-	////if (det < 0) return 360 + atan2f(det, dot);// *180.f / M_PIF; // det <0 -180
-
-	return 1;//atan2f(det, dot);// *180.f / M_PIF;
+	return atan2f(det, dot);
 }

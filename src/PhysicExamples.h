@@ -145,4 +145,30 @@ namespace PhysicExamples3d {
 			};
 		}
 	}
+	namespace Collisions {
+		template<typename PB, typename V>
+		void collision_with_viscosity(PB* i, PB* j) {
+			V diff = i->getPos() - j->getPos();
+			float diffLen = diff.length();
+			float dist = diffLen - (i->getRadius() + j->getRadius());
+			if (dist < 0) {
+				if (i->isKinematic) i->setPos(i->getPos() - diff / diffLen * (dist / 2)); // * 0.5; //squishiness
+				if (j->isKinematic) j->setPos(j->getPos() + diff / diffLen * (dist / 2)); // * 0.5;
+			}
+			else if (dist < 2) {
+				if (i->isKinematic) i->setPos(i->getPos() - diff / diffLen * (dist / 2) * 0.001f); // * 0.5; //squishiness
+				if (j->isKinematic) j->setPos(j->getPos() + diff / diffLen * (dist / 2) * 0.001f); // * 0.5;
+			}
+		}
+		template<typename PB, typename V>
+		void squishy_collision(PB* i, PB* j) {
+			V diff = i->getPos() - j->getPos();
+			float diffLen = diff.length();
+			float dist = diffLen - (i->getRadius() + j->getRadius());
+			if (dist < 0) {
+				if (i->isKinematic) i->setPos(i->getPos() - diff / diffLen * (dist / 2) * 0.5);
+				if (j->isKinematic) j->setPos(j->getPos() + diff / diffLen * (dist / 2) * 0.5);
+			}
+		}
+	}
 }

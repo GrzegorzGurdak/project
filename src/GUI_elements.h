@@ -14,7 +14,7 @@ public:
 	void objectAmountUpdate(size_t objectAmount) { objectAmountText.setString(std::to_string(objectAmount)); }
 	void simTimeAdd(int addSimTimeValue) { simTimeValue += addSimTimeValue; }
 
-	void update(sf::Event& event) {
+	void update() {
 		if (fClock.getElapsedTime().asSeconds() >= 1.0f)
 		{
 			if (frame_counter != 0) {

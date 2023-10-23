@@ -19,7 +19,7 @@ struct Chunk3d{
     uint8_t size{ 0 };
     inline void push_back(PhysicBody3d* obj) {
         if(size == chunkCapacity){
-            std::cout << "Chunk is full" << std::endl;
+            // std::cout << "Chunk is full" << std::endl;
             return;
         }
         objects[size] = obj;
@@ -104,7 +104,7 @@ public:
     PhysicSolver3d& add(PhysicBody3d* obj);
     PhysicSolver3d& addLink(PhysicLink3d* obj) { links.push_back(obj); return *this; }
 
-    void update(long long (&simResult)[6], const float dtime, const int sub_step = 1);
+    void update(long long (&simResult)[7], const float dtime, const int sub_step = 1);
 
     void update_position(const float dtime);
     void update_acceleration();
@@ -150,6 +150,9 @@ class PhysicDrawer3d : public sf::Drawable {
 public:
     PhysicDrawer3d(const PhysicSolver3d& ps) : physicSolver{ ps } {}
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+    void drawSphere(const Vec2 pos, const float radius, const sf::Color color) const{
+        
+    }
 protected:
     const PhysicSolver3d& physicSolver;
 };

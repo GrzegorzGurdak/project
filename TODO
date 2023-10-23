@@ -1,3 +1,5 @@
 Odosobnienie GUI
 Lepsze NonKinematic w chunk'u
 bardzie zaawansowany system rysowania, np nie rysuje w tym samym miejscu
+
+handler passes itself as an parameter to lambdas

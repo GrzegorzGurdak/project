@@ -18,7 +18,7 @@ struct Chunk{
     uint8_t size{ 0 };
     inline void push_back(PhysicBody2d* obj) {
         if(size == CHUNK_CAPACITY){
-            // std::cout << "Chunk is full" << std::endl;
+            std::cout << "Chunk is full" << std::endl;
             return;
         }
         objects[size] = obj;

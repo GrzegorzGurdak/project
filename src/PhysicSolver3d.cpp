@@ -112,8 +112,8 @@ void ChunkGrid3d::solve_collision(Chunk3d& central_chunk, Chunk3d& neighboring_c
                     float diffLen = diff.length();
                     float dist = diffLen - (i->getRadius() + j->getRadius());
                     if (dist < 0) {
-                        if (i->isKinematic) i->current_position -= diff / diffLen * (dist / 2); // * 0.5; //squishiness
-                        if (j->isKinematic) j->current_position += diff / diffLen * (dist / 2); // * 0.5;
+                        if (i->isKinematic) i->current_position -= diff / diffLen * (dist / 2) * 0.5; //squishiness
+                        if (j->isKinematic) j->current_position += diff / diffLen * (dist / 2) * 0.5;
                     }
                 }
                 else if (collision_type == FUNC) {
@@ -144,7 +144,7 @@ PhysicSolver3d& PhysicSolver3d::add(PhysicBody3d* obj) {
     return *this;
 }
 
-void PhysicSolver3d::update(long long (&simResult)[6], const float dtime, const int sub_step) {
+void PhysicSolver3d::update(long long (&simResult)[7], const float dtime, const int sub_step) {
     float sub_dt = dtime / sub_step;
 
     for (int i = 0; i < sub_step; i++) {
@@ -161,12 +161,12 @@ void PhysicSolver3d::update(long long (&simResult)[6], const float dtime, const 
         end = std::chrono::steady_clock::now();
         simResult[2] = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
         begin = std::chrono::steady_clock::now();
-        // grid.assignGrid(objects);
+        grid.assignGrid(objects);
         end = std::chrono::steady_clock::now();
         simResult[3] = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
         begin = std::chrono::steady_clock::now();
-        update_collision();
-        // grid.update_collision();
+        // update_collision();
+        grid.update_collision();
         //grid.update_collision_mt();//multi_thread
         end = std::chrono::steady_clock::now();
         simResult[4] = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
@@ -308,7 +308,7 @@ void PhysicDrawer3d::draw(sf::RenderTarget& target, sf::RenderStates states) con
         glColor3f(i->getFigureColor().r / 255.f, i->getFigureColor().g / 255.f, i->getFigureColor().b / 255.f);
         glPushMatrix();
         glTranslatef(i->getPos().x, 690 - i->getPos().y, i->getPos().z);
-        glutSolidSphere(i->getRadius(), 20, 20);
+        glutSolidSphere(i->getRadius() + 1, 10, 10);
         glPopMatrix();
     }
 }

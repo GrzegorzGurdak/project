@@ -1,0 +1,79 @@
+keyboardHandler.pressedL = [&](KeyboardHandler& _kh) {
+    oglGraphics.switchLight();
+};
+
+keyboardHandler.pressedLMB = [&](KeyboardHandler& _kh) {
+    // mousePressed = true;
+    // mousePosition.set(event.mouseButton.x, event.mouseButton.y);
+};
+
+keyboardHandler.releasedLMB = [&](KeyboardHandler& _kh) {
+    // mousePressed = false;
+    // mousePosition.set(event.mouseButton.x, event.mouseButton.y);
+};
+
+keyboardHandler.onLMB = [&](KeyboardHandler& _kh) {
+    if (clock.getElapsedTime().asMilliseconds() > 10) {
+
+        for (int i = 0; i < 2; i++){
+            PhysicBody3d* pb = new PhysicBody3d(
+                Vec3(_kh.mousePosition.x, _kh.mousePosition.y, 150.f) + Vec3::random_rad(40), 20.f,//(double)rand() / RAND_MAX * 3 + 2,
+                ColorConv::hsvToRgb((sandbox.getObjectAmount() * 15 % 256) / 256., 1, 1)
+            );
+            if (_kh.shiftState) pb->isKinematic = false;
+            sandbox.add(pb);
+        }
+
+        clock.restart();
+        statElement.objectAmountUpdate(sandbox.getObjectAmount());
+    }
+};
+
+keyboardHandler.mouseMoved = [&](KeyboardHandler& _kh) {
+    // mousePosition.set(event.mouseMove.x, event.mouseMove.y);
+    // std::cout << mousePosition << std::endl;
+};
+
+keyboardHandler.onUp = [&](KeyboardHandler& _kh) {
+    oglGraphics.phi += 0.1f;
+    oglGraphics.setCamera();
+};
+keyboardHandler.onDown = [&](KeyboardHandler& _kh) {
+    oglGraphics.phi -= 0.1f;
+    oglGraphics.setCamera();
+};
+keyboardHandler.onLeft = [&](KeyboardHandler& _kh) {
+    oglGraphics.theta += 0.1f;
+    oglGraphics.setCamera();
+};
+keyboardHandler.onRight = [&](KeyboardHandler& _kh) {
+    oglGraphics.theta -= 0.1f;
+    oglGraphics.setCamera();
+};
+keyboardHandler.onDash = [&](KeyboardHandler& _kh) {
+    oglGraphics.R += 10.f;
+    oglGraphics.setCamera();
+};
+keyboardHandler.onEqual = [&](KeyboardHandler& _kh) {
+    oglGraphics.R -= 10.f;
+    oglGraphics.setCamera();
+};
+
+// keyboardHandler.onUp = [&](KeyboardHandler& _kh) {
+//     if (shiftState) {
+//         if (ctrlState) {
+//             oglGraphics.R += 10;
+//         }
+//         else {
+//             oglGraphics.phi += 0.1;
+//         }
+//     }
+//     else {
+//         if (ctrlState) {
+//             oglGraphics.theta += 0.1;
+//         }
+//         else {
+//             oglGraphics.R += 10;
+//         }
+//     }
+// };
