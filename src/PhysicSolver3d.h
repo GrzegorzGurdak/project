@@ -7,6 +7,11 @@
 #include <functional>
 #include <SFML/Graphics.hpp>
 
+
+#include <SFML/OpenGL.hpp>
+#include <gl/glu.h>
+#include <GL/glut.h>
+
 #include "PhysicBody3d.h"
 #include "PhysicLink3d.h"
 
@@ -148,11 +153,15 @@ protected:
 
 class PhysicDrawer3d : public sf::Drawable {
 public:
-    PhysicDrawer3d(const PhysicSolver3d& ps) : physicSolver{ ps } {}
+    PhysicDrawer3d(const PhysicSolver3d& ps) : physicSolver{ ps }, sphereList{ glGenLists(1) } {
+        glNewList(sphereList, GL_COMPILE);
+        glutSolidSphere(10.f, 10, 10);
+        glEndList();
+    }
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
     void drawSphere(const Vec2 pos, const float radius, const sf::Color color) const{
-        
     }
 protected:
     const PhysicSolver3d& physicSolver;
+    GLuint sphereList;
 };

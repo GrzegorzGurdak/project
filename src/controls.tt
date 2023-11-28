@@ -15,9 +15,9 @@ keyboardHandler.releasedLMB = [&](KeyboardHandler& _kh) {
 keyboardHandler.onLMB = [&](KeyboardHandler& _kh) {
     if (clock.getElapsedTime().asMilliseconds() > 10) {
 
-        for (int i = 0; i < 2; i++){
+        for (int i = 0; i < 50; i++){
             PhysicBody3d* pb = new PhysicBody3d(
-                Vec3(_kh.mousePosition.x, _kh.mousePosition.y, 150.f) + Vec3::random_rad(40), 20.f,//(double)rand() / RAND_MAX * 3 + 2,
+                Vec3(_kh.mousePosition.x, _kh.mousePosition.y, 150.f) + Vec3::random_rad(40), 10.f,//(double)rand() / RAND_MAX * 3 + 2,
                 ColorConv::hsvToRgb((sandbox.getObjectAmount() * 15 % 256) / 256., 1, 1)
             );
             if (_kh.shiftState) pb->isKinematic = false;

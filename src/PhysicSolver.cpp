@@ -2,6 +2,7 @@
 #include <chrono>
 #include <SFML/OpenGL.hpp>
 #include <gl/glu.h>
+// #include <openmp.h>
 
 ////ChunkGrid:
 

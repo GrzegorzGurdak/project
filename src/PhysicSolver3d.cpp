@@ -1,11 +1,5 @@
 #include "PhysicSolver3d.h"
 #include <chrono>
-#include <SFML/OpenGL.hpp>
-#include <gl/glu.h>
-// #include <glut.h>
-#include <GL/glut.h>
-
-
 
 ////ChunkGrid:
 
@@ -165,7 +159,7 @@ void PhysicSolver3d::update(long long (&simResult)[7], const float dtime, const 
         end = std::chrono::steady_clock::now();
         simResult[3] = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
         begin = std::chrono::steady_clock::now();
-        // update_collision();
+        //update_collision();
         grid.update_collision();
         //grid.update_collision_mt();//multi_thread
         end = std::chrono::steady_clock::now();
@@ -282,21 +276,22 @@ void PhysicDrawer3d::draw(sf::RenderTarget& target, sf::RenderStates states) con
     // //     target.draw(i->getFigure(), states);
     // // }
     // glPointSize(20.f);
+    // glPointParameterf(GL_POINT_DISTANCE_ATTENUATION, 20.f);
     // glBegin(GL_POINTS);
     // for (const auto& i : physicSolver.objects)
     // {
     //     glColor3f(i->getFigureColor().r / 255.f, i->getFigureColor().g / 255.f, i->getFigureColor().b / 255.f);
     //     glVertex3f(i->getPos().x, 690 - i->getPos().y, i->getPos().z);
     // }
-    // // for (const auto& i : physicSolver.getChunkGrid().getGrid())
-    // // {
-    // //     for (const auto& j : i)
-    // //     {
-    // //         //target.draw(j->getFigure(), states);
-    // //         glColor3f(j->getFigureColor().r / 255.f, j->getFigureColor().g / 255.f, j->getFigureColor().b / 255.f);
-    // //         glVertex3f(j->getPos().x, 690 - j->getPos().y, j->getPos().z);
-    // //     }
-    // // }
+    // for (const auto& i : physicSolver.getChunkGrid().getGrid())
+    // {
+    //     for (const auto& j : i)
+    //     {
+    //         //target.draw(j->getFigure(), states);
+    //         glColor3f(j->getFigureColor().r / 255.f, j->getFigureColor().g / 255.f, j->getFigureColor().b / 255.f);
+    //         glVertex3f(j->getPos().x, 690 - j->getPos().y, j->getPos().z);
+    //     }
+    // }
     // glEnd();
     // for (const auto& i : physicSolver.links)
     // {
@@ -308,7 +303,8 @@ void PhysicDrawer3d::draw(sf::RenderTarget& target, sf::RenderStates states) con
         glColor3f(i->getFigureColor().r / 255.f, i->getFigureColor().g / 255.f, i->getFigureColor().b / 255.f);
         glPushMatrix();
         glTranslatef(i->getPos().x, 690 - i->getPos().y, i->getPos().z);
-        glutSolidSphere(i->getRadius() + 1, 10, 10);
+        // glutSolidSphere(i->getRadius() + 1, 10, 10);
+        glCallList(sphereList);
         glPopMatrix();
     }
 }

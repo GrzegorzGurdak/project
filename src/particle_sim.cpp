@@ -27,24 +27,24 @@
 #include <GL/glut.h>
 
 
-
-
-
 int main(int argc, char** argv)
 {
 	OpenGLGraphics oglGraphics(700, 1.5f, 0);
 	sf::Clock clock;
 	sf::RenderWindow window(sf::VideoMode(770, 730), "Orbiting", sf::Style::Titlebar | sf::Style::Close, sf::ContextSettings(24, 8, 8, 4, 5)); //730
 	KeyboardHandler keyboardHandler(window);
+	oglGraphics.reshapeScreen(window.getSize());
+    oglGraphics.initOpenGL(argc, argv);
 	//sf::Event event;
 	window.setFramerateLimit(60);
 	std::cout << "hello" << std::endl;
+	std::cout << GL_MAX_NAME_STACK_DEPTH << std::endl;
 
 	sf::Font font; font.loadFromFile("fonts/arial.ttf");
 
 	StatElement statElement(font);
 
-	PhysicSolver3d sandbox(ChunkGrid3d(20, window.getSize().x, window.getSize().y, 300));
+	PhysicSolver3d sandbox(ChunkGrid3d(10, window.getSize().x, window.getSize().y, 300));
 	PhysicDrawer3d sandbox_draw(sandbox);
 
 	// bool mousePressed = false;
@@ -76,13 +76,13 @@ int main(int argc, char** argv)
 	sandbox.getChunkGrid().set_collision_def();
 	// sandbox.getChunkGrid().set_collision(PhysicExamples::Collisions::squishy_collision);
 	//sandbox.set_constraints(PhysicExamples::Constrains::defaultConstrain);
+	#if defined(ENABLE_OPENMP)
+		std::cout << "OpenMP enabled\n";
+	#endif
 
 	bool dragEnable = false;
 	bool shiftPressed = false;
 	// bool kinematicStateBefore;
-
-	oglGraphics.reshapeScreen(window.getSize());
-    oglGraphics.initOpenGL(argc, argv);
 
 	int acc = 100;
 
@@ -168,15 +168,17 @@ int main(int argc, char** argv)
 		// oglGraphics.R += RKey * 10.f;
 		// if(thetaKey || phiKey || RKey) oglGraphics.setCamera();
 
+		constexpr int subStep = 2;
+
 		if (!paused) {
 			auto start = std::chrono::steady_clock::now();
-			sandbox.update(timeResults, 1 / 30.f, 4);
+			sandbox.update(timeResults, 1 / 30.f, subStep);
 			auto end = std::chrono::steady_clock::now();
 
 			statElement.simTimeAdd(int(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()));
 		}
 
-		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point symBegin = std::chrono::steady_clock::now();
 
 		statElement.update();
 
@@ -191,11 +193,11 @@ int main(int argc, char** argv)
 		window.popGLStates();
 		window.display();
 
-		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-        timeResults[6] = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+		std::chrono::steady_clock::time_point symEnd = std::chrono::steady_clock::now();
+        timeResults[6] = std::chrono::duration_cast<std::chrono::microseconds>(symEnd - symBegin).count();
 
 		for (int i = 0; i < 7; i++)
-			std::cout  << std::setw(7) << std::setprecision(2) << timeResults[i]/1000.f;
+			std::cout  << std::setw(7) << std::setprecision(2) << (timeResults[i]/1000.f * (i<6 ? subStep : 1));
 		std::cout << "\n";
 		// std::cout << mousePosition << "\n";
 	}
