@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.11)
 
 project(project)
 
@@ -50,7 +50,6 @@ find_package(OpenGL)
 add_executable(${PROJECT_NAME} ${sources})
 target_link_libraries(${PROJECT_NAME} sfml-graphics OpenMP::OpenMP_CXX OpenGL::GLU)
 
-
 if(OpenMP_CXX_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC )
     message("found OpenMP")
@@ -62,6 +61,6 @@ set_target_properties(PROPERTIES LINKER_LANGUAGE CXX)
 
 #Uncomment for font support
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-   COMMAND ${CMAKE_COMMAND} -E copy_directory
-       "${PROJECT_SOURCE_DIR}/fonts"
-       $<TARGET_FILE_DIR:${PROJECT_NAME}>/fonts)
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+  "${PROJECT_SOURCE_DIR}/fonts"
+  $<TARGET_FILE_DIR:${PROJECT_NAME}>/fonts)

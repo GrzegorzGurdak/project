@@ -16,17 +16,24 @@
 #include "PhysicBody2d.h"
 #include "PhysicSolver.h"
 #include "PhysicExamples.h"
+#include "OpenGLGraphics.h"
 #include "ColorConv.h"
-#include "ImageGenerator.h"
+// #include "ImageGenerator.h"
 #include "GUI_elements.h"
+#include "GameLogic.h"
 #include <gl/glu.h>
 
-int main()
+int main(int argc, char** argv)
 {
+	OpenGLGraphics oglGraphics(700, 1.5f, 0);
+
 	sf::Clock clock;
-	sf::RenderWindow window(sf::VideoMode(770, 730), "Orbiting", sf::Style::Titlebar | sf::Style::Close); //730
+	sf::RenderWindow window(sf::VideoMode(770, 730), "Orbiting", sf::Style::Titlebar | sf::Style::Close, sf::ContextSettings(24, 8, 8, 4, 5)); //730
 	sf::Event event;
 	window.setFramerateLimit(60);
+
+	oglGraphics.initOpenGL(argc, argv);
+	oglGraphics.reshapeScreen(window.getSize());
 
 	sf::Font font; font.loadFromFile("fonts/arial.ttf");
 
@@ -36,6 +43,7 @@ int main()
 	// \/  \/  \/  MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!\/  \/  \/
 	//PhysicSolver sandbox = *PhysicExamples::Sandbox::cloth(window.getSize(), {250,200},10,15); // losing pointer to allocated data
 	PhysicDrawer sandbox_draw(sandbox);
+	GameLogic gameLogic(sandbox);
 	//sandbox.add(PhysicBody2d(Vec2(150, 180),5)).add(PhysicBody2d(Vec2(450, 180),5));
 
 	bool mousePressed = false;
@@ -65,7 +73,7 @@ int main()
 	sandbox.getChunkGrid().set_collision(PhysicExamples::Collisions::squishy_collision);
 	//sandbox.set_constraints(PhysicExamples::Constrains::defaultConstrain);
 
-	ColorMap colormap("fonts/mem.png", "result", { 30,30 }, { 730,690 });
+	// ColorMap colormap("fonts/mem.png", "result", { 30,30 }, { 730,690 });
 
 	bool dragEnable = false;
 	bool shiftPressed = false;
@@ -77,10 +85,10 @@ int main()
 			if (event.type == sf::Event::Closed || (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape))
 				window.close();
 
-			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
-				ImageGenerator::exportResult(sandbox, "result");
-			}
-			else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
+			// if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
+			// 	ImageGenerator::exportResult(sandbox, "result");
+			// }
+			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
 				paused = !paused;
 			}
 			else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::LShift) {
@@ -158,12 +166,24 @@ int main()
 
 		statElement.update(event);
 
+		oglGraphics.drawScreen(window.getSize());
+        oglGraphics.drawAxes();
+
 		window.draw(sandbox_draw);
+		// if (dragEnable) {
+		// 	dragBuffer.second->move(mousePosition);
+		// }
+		window.pushGLStates();
+		window.draw(statElement);
+		window.popGLStates();
 		if (dragEnable) {
 			dragBuffer.second->move(mousePosition);
 		}
-		window.draw(statElement);
+		oglGraphics.drawCircle(mousePosition.x, window.getSize().y - mousePosition.y, 40, 20);
 		window.display();
+		// window.draw(sandbox_draw);
+		// window.draw(statElement);
+		// window.display();
 	}
 }
 

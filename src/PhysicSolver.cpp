@@ -271,13 +271,26 @@ void PhysicDrawer::draw(sf::RenderTarget& target, sf::RenderStates states) const
     // {
     //     target.draw(i->getFigure(), states);
     // }
-    for (const auto& i : physicSolver.getChunkGrid().getGrid())
+    // for (const auto& i : physicSolver.getChunkGrid().getGrid())
+    // {
+    //     for (const auto& j : i)
+    //     {
+    //         target.draw(j->getFigure(), states);
+    //     }
+    // }
+    glPointSize(4.f + 1.f + 2.f);
+    glBegin(GL_POINTS);
+    for (const auto& i : physicSolver.objects)
     {
-        for (const auto& j : i)
-        {
-            target.draw(j->getFigure(), states);
-        }
+        glColor3f(i->getColor().r / 255.f, i->getColor().g / 255.f, i->getColor().b / 255.f);
+        // glPushMatrix();
+        //glTranslatef(i->getPos().x, 690 - i->getPos().y, 0);
+        // glutSolidSphere(i->getRadius() + 1, 10, 10);
+        //glCallList(sphereList);
+        glVertex3f(i->getPos().x, 690 - i->getPos().y + 20, 0);
+        //glPopMatrix();
     }
+    glEnd();
     for (const auto& i : physicSolver.links)
     {
         target.draw(i->getFigure(), states);
