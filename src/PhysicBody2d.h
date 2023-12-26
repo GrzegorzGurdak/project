@@ -4,20 +4,13 @@
 
 struct PhysicBody2d
 {
-	PhysicBody2d(Vec2 cp, float r, sf::Color  cl):
-		current_position{ cp }, old_position{ cp }, radius{ r }//, cs{ r }
-	{
-		//cs.setFillColor(cl);
-		color = cl;
-		//cs.setPosition(current_position - Vec2{ radius,radius });
-	}
+	PhysicBody2d(Vec2 cp, float r, bool iK, sf::Color  cl):
+		current_position{ cp }, old_position{ cp }, radius{ r }, isKinematic{ iK }, color{ cl } {}
 
-	PhysicBody2d(Vec2 cp = {}, float r = { 20 }) :
-		current_position{ cp }, old_position{ cp }, radius{ r }//, cs{ r }
+	PhysicBody2d(Vec2 cp = {}, float r = { 20 }, bool iK = false) :
+		current_position{ cp }, old_position{ cp }, radius{ r }, isKinematic{ iK }
 	{
-		//cs.setFillColor(sf::Color(rand() % 256, rand() % 256, rand() % 256));
 		color = sf::Color(rand() % 256, rand() % 256, rand() % 256);
-		//cs.setPosition(current_position - Vec2{ radius,radius });
 	}
 
 	void update_position(const float dtime) {
@@ -50,11 +43,9 @@ protected:
 	Vec2 current_position;
 	Vec2 old_position;
 	Vec2 acceleration = {};
-	// sf::CircleShape cs;
 	sf::Color color;
 	friend class PhysicSolver;
 	friend class ChunkGrid;
 	friend class PhysicLink2d;
-	//accelerate
 };
 

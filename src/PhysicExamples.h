@@ -9,11 +9,11 @@ namespace PhysicExamples {
 			return[centre, strength](PhysicBody2d* i, const std::vector<PhysicBody2d*>&) {
 				Vec2 diff = centre - i->getPos();
 				float diffLen = diff.length();
-				
+
 				if(diffLen<1)
 					return Vec2();
 				return diff / diffLen / diffLen * strength;
-				
+
 			};
 		}
 	}

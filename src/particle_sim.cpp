@@ -13,6 +13,7 @@
 #include <chrono>
 
 #include "MVec.h"
+#include "Selector.hpp"
 #include "PhysicBody2d.h"
 #include "PhysicSolver.h"
 #include "PhysicExamples.h"
@@ -27,6 +28,8 @@ int main(int argc, char** argv)
 {
 	OpenGLGraphics oglGraphics(700, 1.5f, 0);
 
+	float particleSize = 4;
+
 	sf::Clock clock;
 	sf::RenderWindow window(sf::VideoMode(770, 730), "Orbiting", sf::Style::Titlebar | sf::Style::Close, sf::ContextSettings(24, 8, 8, 4, 5)); //730
 	sf::Event event;
@@ -39,15 +42,17 @@ int main(int argc, char** argv)
 
 	StatElement statElement(font);
 
-	PhysicSolver sandbox(ChunkGrid(4, window.getSize().x, window.getSize().y)); //30,33,36
+	PhysicSolver sandbox(ChunkGrid(int(particleSize) * 2, window.getSize().x, window.getSize().y)); //30,33,36
+	Selector selector(sandbox.getChunkGrid());
 	// \/  \/  \/  MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!\/  \/  \/
 	//PhysicSolver sandbox = *PhysicExamples::Sandbox::cloth(window.getSize(), {250,200},10,15); // losing pointer to allocated data
-	PhysicDrawer sandbox_draw(sandbox);
+	PhysicDrawer sandbox_draw(sandbox, window.getSize(), particleSize);
 	GameLogic gameLogic(sandbox);
 	//sandbox.add(PhysicBody2d(Vec2(150, 180),5)).add(PhysicBody2d(Vec2(450, 180),5));
 
 	bool mousePressed = false;
 	Vec2 mousePosition;
+	float cursorSize = 40;
 
 	bool paused = false;
 
@@ -69,8 +74,9 @@ int main(int argc, char** argv)
 		return Vec2(0, 1) * r * r * r;
 		});*/
 	//sandbox.set_constraints_def();
+	// sandbox.getChunkGrid().set_collision(PhysicExamples::Collisions::collision_with_viscosity);
 	sandbox.set_constraints(PhysicExamples::Constrains::boxRestrain({ 30,30 }, { 730,690 }));
-	sandbox.getChunkGrid().set_collision(PhysicExamples::Collisions::squishy_collision);
+	// sandbox.getChunkGrid().set_collision(PhysicExamples::Collisions::squishy_collision);
 	//sandbox.set_constraints(PhysicExamples::Constrains::defaultConstrain);
 
 	// ColorMap colormap("fonts/mem.png", "result", { 30,30 }, { 730,690 });
@@ -78,6 +84,8 @@ int main(int argc, char** argv)
 	bool dragEnable = false;
 	bool shiftPressed = false;
 	bool kinematicStateBefore;
+
+	window.setMouseCursorVisible(false);
 
 	while (window.isOpen()) {
 		window.clear();
@@ -88,12 +96,21 @@ int main(int argc, char** argv)
 			// if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
 			// 	ImageGenerator::exportResult(sandbox, "result");
 			// }
-			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
-				paused = !paused;
+			if (event.type == sf::Event::KeyPressed) {
+				if(event.key.code == sf::Keyboard::Space) paused = !paused;
+				else if(event.key.code == sf::Keyboard::Equal && cursorSize < 100) cursorSize += 1;
+				else if(event.key.code == sf::Keyboard::Dash && cursorSize > 1) cursorSize -= 1;
+				else if (event.key.code == sf::Keyboard::LShift) shiftPressed = true;
+				else if (event.key.code == sf::Keyboard::R && dragEnable)
+					if (dragBuffer.first)
+						kinematicStateBefore = !kinematicStateBefore;
+				else if(event.key.code == sf::Keyboard::D) {
+				selector.select(mousePosition, cursorSize);
+				// 	for( auto &i : selector.getSelected())
+				// 		sandbox.addLink(new PhysicLink2d(*dragBuffer.second, *i, 100));
+				}
 			}
-			else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::LShift) {
-				shiftPressed = true;
-			}
+
 			else if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::LShift) {
 				shiftPressed = false;
 			}
@@ -130,23 +147,23 @@ int main(int argc, char** argv)
 				if (dragBuffer.first) dragBuffer.second->isKinematic = kinematicStateBefore;
 				dragEnable = false;
 			}
-
-			if (dragEnable && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::R) {
-				if (dragBuffer.first)
-					kinematicStateBefore = !kinematicStateBefore;
-			}
 		}
 
 		// colormap.pour(sandbox, statElement,6e3);
 
 		if (mousePressed && clock.getElapsedTime().asMilliseconds() > 10) {
-			for (int i = 0; i < 10; i++){
-				PhysicBody2d* pb = new PhysicBody2d(
-					mousePosition + Vec2::random_rad(40), 4.f,//(double)rand() / RAND_MAX * 3 + 2,
-					ColorConv::hsvToRgb((sandbox.getObjectAmount() / 5 % 256) / 256., 1, 1)
-				);
-				if (shiftPressed) pb->isKinematic = false;
-				sandbox.add(pb);
+			for (int i = 0; i < 30; i++){
+				// PhysicBody2d* pb = new PhysicBody2d(
+				// 	mousePosition + Vec2::random_rad(cursorSize), 4.f,//(double)rand() / RAND_MAX * 3 + 2,
+				// 	ColorConv::hsvToRgb((sandbox.getObjectAmount() / 5 % 256) / 256., 1, 1)
+				// );
+				// if (shiftPressed) pb->isKinematic = false;
+				// sandbox.add(pb);
+				sandbox.add(
+					mousePosition + Vec2::random_rad(cursorSize),
+					particleSize,
+					!shiftPressed,
+					ColorConv::hsvToRgb((sandbox.getObjectAmount() / 5 % 256) / 256., 1, 1));
 			}
 
 			clock.restart();
@@ -160,9 +177,10 @@ int main(int argc, char** argv)
 			statElement.simTimeAdd(int(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()));
 		}
 
-		for (int i = 0; i < 6; i++)
-			std::cout << simResult[i] << std::setw(6);
-		std::cout << "\n";
+		// for (int i = 0; i < 6; i++)
+		// 	std::cout << simResult[i] << std::setw(6);
+		// std::cout << "\n";
+		//std::cout<<selector.getSelected().size()<<"\n";
 
 		statElement.update(event);
 
@@ -179,11 +197,8 @@ int main(int argc, char** argv)
 		if (dragEnable) {
 			dragBuffer.second->move(mousePosition);
 		}
-		oglGraphics.drawCircle(mousePosition.x, window.getSize().y - mousePosition.y, 40, 20);
+		oglGraphics.drawCircle(mousePosition.x, window.getSize().y - mousePosition.y, cursorSize, 20);
 		window.display();
-		// window.draw(sandbox_draw);
-		// window.draw(statElement);
-		// window.display();
 	}
 }
 

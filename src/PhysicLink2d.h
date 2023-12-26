@@ -20,7 +20,8 @@ public:
 		if (physicBody2.isKinematic) physicBody2.current_position -= diff / diff_l * (diff_l - link_length) / 2;
 	}
 
-	const sf::VertexArray& getFigure() const { return line; }
+	const PhysicBody2d& getPB1() const { return physicBody1; }
+	const PhysicBody2d& getPB2() const { return physicBody2; }
 
 private:
 	PhysicBody2d& physicBody1;

@@ -13,12 +13,12 @@
 #include <omp.h>
 
 struct Chunk{
-    #define CHUNK_CAPACITY 5
+    #define CHUNK_CAPACITY 3
     PhysicBody2d* objects[CHUNK_CAPACITY];
     uint8_t size{ 0 };
     inline void push_back(PhysicBody2d* obj) {
-        if(size == CHUNK_CAPACITY){
-            // std::cout << "Chunk is full" << std::endl;
+        if(isFull()){
+            std::cout << "Chunk is full" << std::endl;
             return;
         }
         objects[size] = obj;
@@ -27,6 +27,9 @@ struct Chunk{
 
     inline void clear() {
         size = 0;
+    }
+    inline bool isFull() const {
+        return size == CHUNK_CAPACITY;
     }
 
     PhysicBody2d* operator[](int i) {
@@ -47,6 +50,9 @@ struct Chunk{
     }
     const PhysicBody2d* const * end() const {
         return objects + size;
+    }
+    inline bool empty() const {
+        return size == 0;
     }
 };
 
@@ -73,6 +79,11 @@ public:
     std::vector<Chunk>& getGrid() { return grid; }
     const std::vector<Chunk>& getGrid() const { return grid; }
 
+    int getChunkSize() const { return cellSize; }
+    int getWidth() const { return grid_width; }
+    int getHeight() const { return grid_height; }
+    Chunk& getChunk(int x, int y) { return grid.at(x + y * grid_width); }
+
 protected:
     std::vector<Chunk> grid;
     int cellSize;
@@ -97,6 +108,7 @@ public:
 
 
     PhysicSolver& add(PhysicBody2d* obj);
+    PhysicSolver& add(Vec2 position, float size, bool isKinematic = false, sf::Color color = sf::Color::White);
     PhysicSolver& addLink(PhysicLink2d* obj) { links.push_back(obj); return *this; }
 
     void update(long long (&simResult)[6], const float dtime, const int sub_step = 1);
@@ -142,8 +154,10 @@ protected:
 
 class PhysicDrawer : public sf::Drawable {
 public:
-    PhysicDrawer(const PhysicSolver& ps) : physicSolver{ ps } {}
+    PhysicDrawer(const PhysicSolver& pS, const Vec2 wS, const float cS);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 protected:
     const PhysicSolver& physicSolver;
+    const Vec2 windowSize;
+    const float particleSize;
 };

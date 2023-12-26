@@ -50,47 +50,19 @@ void ChunkGrid::update_collision() {
 }
 
 void ChunkGrid::update_collision_mt() {
-    int split_num = 8;
-    #pragma omp parallel for
-    for (int t = 0; t < split_num; t++) {
-
-        int b{ 1 + t * grid_width / split_num };
-        int e{ ((t * 2 + 1) * grid_width - 1) / split_num / 2 + 1 };
-
-        for (int x{ 1 + t*grid_width/split_num}; x < ((t * 2 + 1)* grid_width - 1) / split_num/2 + 1; x++) {
-            if (x == grid_width - 1) break;
-            for (int y{ 1 }; y < grid_height - 1; y++) {
-                Chunk& cell = grid.at(x + y * grid_width);
-                if (cell.size != 0)
-                    for (int i{ -1 }; i < 2; i++)
-                        for (int j{ -1 }; j < 2; j++) {
-                            auto& neigh_cell = grid.at(x + i + (y+j) * grid_width);
-                            if (neigh_cell.size != 0)
-                                solve_collision(cell, neigh_cell);
-                        }
-            }
+    //limit thread number to nproc - 1
+    #pragma omp parallel for num_threads(4)//omp_get_num_procs()/2)
+    for (int x{ 1 }; x < grid_width - 1; x++)
+        for (int y{ 1 }; y < grid_height - 1; y++) {
+            Chunk& cell = grid.at(x + y * grid_width);
+            if (cell.size != 0)
+                for (int i{ -1 }; i < 2; i++)
+                    for (int j{ -1 }; j < 2; j++) {
+                        auto& neigh_cell = grid.at(x + i + (y+j) * grid_width);
+                        if (neigh_cell.size != 0)
+                            solve_collision(cell, neigh_cell);
+                    }
         }
-    }
-    #pragma omp parallel for
-    for (int t = 0; t < split_num; t++) {
-
-        int b{ ((t * 2 + 1) * grid_width - 1) / split_num / 2 + 1 };
-        int e{ ((t + 1) * grid_width - 1) / split_num + 1 };
-
-        for (int x{ ((t * 2 + 1) * grid_width - 1) / split_num / 2 + 1 }; x < ((t + 1) * grid_width - 1) / split_num + 1; x++) {
-            if (x == grid_width - 1) break;
-            for (int y{ 1 }; y < grid_height - 1; y++) {
-                Chunk& cell = grid.at(x + y * grid_width);
-                if (cell.size != 0)
-                    for (int i{ -1 }; i < 2; i++)
-                        for (int j{ -1 }; j < 2; j++) {
-                            auto& neigh_cell = grid.at(x + i + (y+j) * grid_width);
-                            if (neigh_cell.size != 0)
-                                solve_collision(cell, neigh_cell);
-                        }
-            }
-        }
-    }
 }
 
 void ChunkGrid::solve_collision(Chunk& central_chunk, Chunk& neighboring_chunk) {
@@ -103,8 +75,8 @@ void ChunkGrid::solve_collision(Chunk& central_chunk, Chunk& neighboring_chunk) 
                     float diffLen = diff.length();
                     float dist = diffLen - (i->getRadius() + j->getRadius());
                     if (dist < 0) {
-                        if (i->isKinematic) i->current_position -= diff / diffLen * (dist / 2); // * 0.5; //squishiness
-                        if (j->isKinematic) j->current_position += diff / diffLen * (dist / 2); // * 0.5;
+                        if (i->isKinematic) i->current_position -= diff / diffLen * (dist / 2) * 1; //squishiness
+                        if (j->isKinematic) j->current_position += diff / diffLen * (dist / 2) * 1;
                     }
                 }
                 else if (collision_type == FUNC) {
@@ -129,9 +101,25 @@ int ChunkGrid::count() {
 
 ////PhysicSolver:
 
-PhysicSolver& PhysicSolver::add(PhysicBody2d* obj) {
+PhysicSolver& PhysicSolver::add(PhysicBody2d* obj) { //depraicated
     objects.push_back(obj);
     grid.updateChunkSize(obj);
+    return *this;
+}
+
+PhysicSolver& PhysicSolver::add(Vec2 position, float size, bool isKinematic, sf::Color color) {
+    int x = int(position.x / grid.getChunkSize());
+    int y = int(position.y / grid.getChunkSize());
+    if(0 <= x && x < grid.getWidth() && 0 <= y && y < grid.getHeight() && !grid.getChunk(x, y).isFull())
+    {
+        PhysicBody2d* obj = new PhysicBody2d(position, size, isKinematic, color);
+        objects.push_back(obj);
+        grid.updateChunkSize(obj);
+        grid.assignGrid(objects);
+        //std::cout << "added" << std::endl;
+        // std::cout << "x: " << x << " y: " << y << "\n";
+        //grid.getGrid().at(x + y * grid.getWidth()).push_back(obj);
+    }
     return *this;
 }
 
@@ -157,7 +145,7 @@ void PhysicSolver::update(long long (&simResult)[6], const float dtime, const in
         simResult[3] = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
         begin = std::chrono::steady_clock::now();
         grid.update_collision();
-        //grid.update_collision_mt();//multi_thread
+        // grid.update_collision_mt();//multi_thread
         end = std::chrono::steady_clock::now();
         simResult[4] = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
         begin = std::chrono::steady_clock::now();
@@ -266,11 +254,12 @@ std::pair<bool, PhysicBody2d*> PhysicSolver::get_from_position(const Vec2& cord)
 
 //PhysicDrawer:
 
+PhysicDrawer::PhysicDrawer(const PhysicSolver& pS, const Vec2 wS, const float cS) : physicSolver{ pS }, windowSize{ wS }, particleSize{cS}
+{
+    glPointSize(particleSize + 1.f + 2.f);
+}
+
 void PhysicDrawer::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-    // for (const auto& i : physicSolver.objects)
-    // {
-    //     target.draw(i->getFigure(), states);
-    // }
     // for (const auto& i : physicSolver.getChunkGrid().getGrid())
     // {
     //     for (const auto& j : i)
@@ -278,21 +267,23 @@ void PhysicDrawer::draw(sf::RenderTarget& target, sf::RenderStates states) const
     //         target.draw(j->getFigure(), states);
     //     }
     // }
-    glPointSize(4.f + 1.f + 2.f);
     glBegin(GL_POINTS);
     for (const auto& i : physicSolver.objects)
     {
         glColor3f(i->getColor().r / 255.f, i->getColor().g / 255.f, i->getColor().b / 255.f);
-        // glPushMatrix();
-        //glTranslatef(i->getPos().x, 690 - i->getPos().y, 0);
-        // glutSolidSphere(i->getRadius() + 1, 10, 10);
-        //glCallList(sphereList);
-        glVertex3f(i->getPos().x, 690 - i->getPos().y + 20, 0);
-        //glPopMatrix();
+        glVertex3f(i->getPos().x, windowSize.y - i->getPos().y, 0);
     }
     glEnd();
+
+    glLineWidth(1.f);
+    glBegin(GL_LINES);
     for (const auto& i : physicSolver.links)
     {
-        target.draw(i->getFigure(), states);
+        //target.draw(i->getFigure(), states);
+        glColor3f(i->getPB1().getColor().r / 255.f, i->getPB1().getColor().g / 255.f, i->getPB1().getColor().b / 255.f);
+        glVertex3f(i->getPB1().getPos().x, windowSize.y - i->getPB1().getPos().y, 0);
+        glColor3f(i->getPB2().getColor().r / 255.f, i->getPB2().getColor().g / 255.f, i->getPB2().getColor().b / 255.f);
+        glVertex3f(i->getPB2().getPos().x, windowSize.y - i->getPB2().getPos().y, 0);
     }
+    glEnd();
 }
