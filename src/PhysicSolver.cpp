@@ -50,12 +50,11 @@ void ChunkGrid::update_collision() {
 }
 
 void ChunkGrid::update_collision_mt() {
-    //limit thread number to nproc - 1
-    #pragma omp parallel for num_threads(4)//omp_get_num_procs()/2)
+    #pragma omp parallel for num_threads(omp_get_num_procs()/2)
     for (int x{ 1 }; x < grid_width - 1; x++)
         for (int y{ 1 }; y < grid_height - 1; y++) {
             Chunk& cell = grid.at(x + y * grid_width);
-            if (cell.size != 0)
+            if (cell.isActive)
                 for (int i{ -1 }; i < 2; i++)
                     for (int j{ -1 }; j < 2; j++) {
                         auto& neigh_cell = grid.at(x + i + (y+j) * grid_width);
@@ -110,7 +109,7 @@ PhysicSolver& PhysicSolver::add(PhysicBody2d* obj) { //depraicated
 PhysicSolver& PhysicSolver::add(Vec2 position, float size, bool isKinematic, sf::Color color) {
     int x = int(position.x / grid.getChunkSize());
     int y = int(position.y / grid.getChunkSize());
-    if(0 <= x && x < grid.getWidth() && 0 <= y && y < grid.getHeight() && !grid.getChunk(x, y).isFull())
+    if(5 <= x && x < grid.getWidth()-5 && 5 <= y && y < grid.getHeight()-5 && grid.getChunk(x, y).canAdd())//!grid.getChunk(x, y).isFull())
     {
         PhysicBody2d* obj = new PhysicBody2d(position, size, isKinematic, color);
         objects.push_back(obj);

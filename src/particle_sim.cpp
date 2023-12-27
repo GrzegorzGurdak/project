@@ -73,11 +73,11 @@ int main(int argc, char** argv)
 		float r = obj->getRadius();
 		return Vec2(0, 1) * r * r * r;
 		});*/
-	//sandbox.set_constraints_def();
+	// sandbox.set_constraints_def();
 	// sandbox.getChunkGrid().set_collision(PhysicExamples::Collisions::collision_with_viscosity);
 	sandbox.set_constraints(PhysicExamples::Constrains::boxRestrain({ 30,30 }, { 730,690 }));
 	// sandbox.getChunkGrid().set_collision(PhysicExamples::Collisions::squishy_collision);
-	//sandbox.set_constraints(PhysicExamples::Constrains::defaultConstrain);
+	// sandbox.set_constraints(PhysicExamples::Constrains::circleRestrain({ 350,350 }, 300));
 
 	// ColorMap colormap("fonts/mem.png", "result", { 30,30 }, { 730,690 });
 

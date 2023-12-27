@@ -16,6 +16,7 @@ struct Chunk{
     #define CHUNK_CAPACITY 3
     PhysicBody2d* objects[CHUNK_CAPACITY];
     uint8_t size{ 0 };
+    bool isActive{false};
     inline void push_back(PhysicBody2d* obj) {
         if(isFull()){
             std::cout << "Chunk is full" << std::endl;
@@ -23,13 +24,18 @@ struct Chunk{
         }
         objects[size] = obj;
         size++;
+        if(obj->isKinematic) isActive = true;
     }
 
     inline void clear() {
         size = 0;
+        isActive = false;
     }
     inline bool isFull() const {
         return size == CHUNK_CAPACITY;
+    }
+    inline bool canAdd() const {
+        return !size;
     }
 
     PhysicBody2d* operator[](int i) {
@@ -139,6 +145,13 @@ public:
     ChunkGrid& getChunkGrid() { return grid; }
     const ChunkGrid& getChunkGrid() const { return grid; }
     const std::vector<PhysicBody2d*>& getObjects() const { return objects; }
+    void deleteObject(PhysicBody2d* obj) {
+        auto it = std::find(objects.begin(), objects.end(), obj);
+        if (it != objects.end()) {
+            objects.erase(it);
+            delete(obj);
+        }
+    }
 
 protected:
     std::vector<PhysicBody2d*> objects{};
