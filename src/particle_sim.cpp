@@ -85,6 +85,8 @@ int main(int argc, char** argv)
 	bool shiftPressed = false;
 	bool kinematicStateBefore;
 
+	PhysicBody2d* debugBuffer;
+
 	window.setMouseCursorVisible(false);
 
 	while (window.isOpen()) {
@@ -101,13 +103,24 @@ int main(int argc, char** argv)
 				else if(event.key.code == sf::Keyboard::Equal && cursorSize < 100) cursorSize += 1;
 				else if(event.key.code == sf::Keyboard::Dash && cursorSize > 1) cursorSize -= 1;
 				else if (event.key.code == sf::Keyboard::LShift) shiftPressed = true;
-				else if (event.key.code == sf::Keyboard::R && dragEnable)
+				else if (event.key.code == sf::Keyboard::R && dragEnable){
 					if (dragBuffer.first)
 						kinematicStateBefore = !kinematicStateBefore;
+				}
 				else if(event.key.code == sf::Keyboard::D) {
-				selector.select(mousePosition, cursorSize);
-				// 	for( auto &i : selector.getSelected())
-				// 		sandbox.addLink(new PhysicLink2d(*dragBuffer.second, *i, 100));
+					selector.select(mousePosition, cursorSize);
+					std::cout<<selector.getSelected().size()<<"\n";
+
+					for( auto &i : selector.getSelected())
+						sandbox.deleteObject(i);
+				}
+				else if(event.key.code == sf::Keyboard::M) {
+					selector.select(mousePosition, cursorSize);
+					std::cout<<selector.getSelected().size()<<"\n";
+
+					for( auto &i : selector.getSelected())
+						if (i != dragBuffer.second)
+							sandbox.addLink(new PhysicLink2d(*dragBuffer.second, *i, 100));
 				}
 			}
 
@@ -130,6 +143,7 @@ int main(int argc, char** argv)
 			if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right && shiftPressed) {
 				dragBuffer = sandbox.pop_from_position({ event.mouseButton.x,event.mouseButton.y });
 				if (dragBuffer.second != &PhysicBody2d::nullPB) {
+					debugBuffer = dragBuffer.second;
 					dragEnable = true;
 					kinematicStateBefore = dragBuffer.second->isKinematic;
 					dragBuffer.second->isKinematic = false;
@@ -149,21 +163,13 @@ int main(int argc, char** argv)
 			}
 		}
 
-		// colormap.pour(sandbox, statElement,6e3);
-
 		if (mousePressed && clock.getElapsedTime().asMilliseconds() > 10) {
 			for (int i = 0; i < 30; i++){
-				// PhysicBody2d* pb = new PhysicBody2d(
-				// 	mousePosition + Vec2::random_rad(cursorSize), 4.f,//(double)rand() / RAND_MAX * 3 + 2,
-				// 	ColorConv::hsvToRgb((sandbox.getObjectAmount() / 5 % 256) / 256., 1, 1)
-				// );
-				// if (shiftPressed) pb->isKinematic = false;
-				// sandbox.add(pb);
 				sandbox.add(
 					mousePosition + Vec2::random_rad(cursorSize),
 					particleSize,
 					!shiftPressed,
-					ColorConv::hsvToRgb((sandbox.getObjectAmount() / 5 % 256) / 256., 1, 1));
+					(shiftPressed ? sf::Color(90,50,20) : sf::Color(20,20,255)));
 			}
 
 			clock.restart();
@@ -180,7 +186,7 @@ int main(int argc, char** argv)
 		// for (int i = 0; i < 6; i++)
 		// 	std::cout << simResult[i] << std::setw(6);
 		// std::cout << "\n";
-		//std::cout<<selector.getSelected().size()<<"\n";
+		std::cout << "Body: pos:" << debugBuffer->getPos() << ", oldPos:" << debugBuffer->getOldPos() << "\n";
 
 		statElement.update(event);
 
@@ -197,7 +203,7 @@ int main(int argc, char** argv)
 		if (dragEnable) {
 			dragBuffer.second->move(mousePosition);
 		}
-		oglGraphics.drawCircle(mousePosition.x, window.getSize().y - mousePosition.y, cursorSize, 20);
+		oglGraphics.drawCursor(mousePosition.x, window.getSize().y - mousePosition.y, cursorSize, 20, shiftPressed);
 		window.display();
 	}
 }

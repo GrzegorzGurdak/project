@@ -88,7 +88,24 @@ void OpenGLGraphics::switchLight() {
     }
 }
 
-void OpenGLGraphics::drawCircle(float cx, float cy, float r, int num_segments)
+void OpenGLGraphics::drawCursor(float cx, float cy, float r, int num_segments, bool isShiftPressed)
+{
+    glColor3f(1,1,1);
+    if (isShiftPressed) {
+        int size = 4;
+        glLineWidth(1);
+        glBegin(GL_LINES);
+        glVertex3f(cx - size, cy, 1);
+        glVertex3f(cx + size, cy, 1);
+        glVertex3f(cx, cy - size, 1);
+        glVertex3f(cx, cy + size, 1);
+        glEnd();
+    }
+    else
+        drawCircle(cx, cy, r, num_segments, 1);
+}
+
+void OpenGLGraphics::drawCircle(float cx, float cy, float r, int num_segments, int depth)
 {
     float theta = 3.1415926f * 2 / float(num_segments);
     float tangetial_factor = tanf(theta);
@@ -102,7 +119,7 @@ void OpenGLGraphics::drawCircle(float cx, float cy, float r, int num_segments)
     glBegin(GL_LINE_LOOP);
     for (int i = 0; i < num_segments; i++)
     {
-        glVertex2f(x + cx, y + cy);
+        glVertex3f(x + cx, y + cy, depth);
 
         float tx = -y;
         float ty = x;

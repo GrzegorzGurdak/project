@@ -75,8 +75,8 @@ void ChunkGrid::solve_collision(Chunk& central_chunk, Chunk& neighboring_chunk) 
                     float diffLen = diff.length();
                     float dist = diffLen - (i->getRadius() + j->getRadius());
                     if (dist < 0) {
-                        if (i->isKinematic) i->current_position -= diff / diffLen * (dist / 2) * 1; //squishiness
-                        if (j->isKinematic) j->current_position += diff / diffLen * (dist / 2) * 1;
+                        if (i->isKinematic) i->current_position -= diff / diffLen * (dist / 2) * 0.8f;
+                        if (j->isKinematic) j->current_position += diff / diffLen * (dist / 2) * 0.8f;
                     }
                 }
                 else if (collision_type == FUNC) {
@@ -144,8 +144,8 @@ void PhysicSolver::update(long long (&simResult)[6], const float dtime, const in
         end = std::chrono::steady_clock::now();
         simResult[3] = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
         begin = std::chrono::steady_clock::now();
-        grid.update_collision();
-        // grid.update_collision_mt();//multi_thread
+        // grid.update_collision();
+        grid.update_collision_mt();//multi_thread
         end = std::chrono::steady_clock::now();
         simResult[4] = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
         begin = std::chrono::steady_clock::now();

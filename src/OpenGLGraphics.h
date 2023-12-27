@@ -25,8 +25,8 @@ public:
 
     void drawScreen(sf::Vector2u size);
 
-    void drawCircle(float cx, float cy, float r, int num_segments);
-    // void drawCircle(float cx, float cy, float r, int num_segments);
+    void drawCursor(float cx, float cy, float r, int num_segments, bool isShiftPressed);
+    void drawCircle(float cx, float cy, float r, int num_segments, int depth = 0);
 
 
     void drawAxes();

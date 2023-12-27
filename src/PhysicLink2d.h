@@ -16,8 +16,8 @@ public:
 		line[1].position = physicBody2.current_position;
 		//if (diff_l < 1e-6) diff_l = 1e-6;
 		//Vec2 tran = diff / diff_l * (diff_l - link_length) / 2;
-		if (physicBody1.isKinematic) physicBody1.current_position += diff / diff_l * (diff_l - link_length) / 2;
-		if (physicBody2.isKinematic) physicBody2.current_position -= diff / diff_l * (diff_l - link_length) / 2;
+		if (physicBody1.isKinematic) physicBody1.current_position += diff / diff_l * (diff_l - link_length) / 2 * 0.01f;
+		if (physicBody2.isKinematic) physicBody2.current_position -= diff / diff_l * (diff_l - link_length) / 2 * 0.01f;
 	}
 
 	const PhysicBody2d& getPB1() const { return physicBody1; }

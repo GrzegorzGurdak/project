@@ -103,8 +103,8 @@ namespace PhysicExamples {
 			float diffLen = diff.length();
 			float dist = diffLen - (i->getRadius() + j->getRadius());
 			if (dist < 0) {
-				if (i->isKinematic) i->setPos(i->getPos() - diff / diffLen * (dist / 2)); // * 0.5; //squishiness
-				if (j->isKinematic) j->setPos(j->getPos() + diff / diffLen * (dist / 2)); // * 0.5;
+				if (i->isKinematic) i->setPos(i->getPos() - diff / diffLen * (dist / 2) * 0.5);
+				if (j->isKinematic) j->setPos(j->getPos() + diff / diffLen * (dist / 2) * 0.5);
 			}
 			else if (dist < 2) {
 				if (i->isKinematic) i->setPos(i->getPos() - diff / diffLen * (dist / 2) * 0.001f); // * 0.5; //squishiness

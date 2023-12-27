@@ -18,8 +18,11 @@ struct PhysicBody2d
 			const Vec2 velocity = current_position - old_position; // velocity [/dtime]
 			old_position = current_position;
 			current_position += velocity + acceleration * dtime * dtime; //verlet
-			//cs.setPosition(current_position - Vec2{ radius,radius });
-		}acceleration = 0;
+		}
+		else{
+			old_position = current_position;
+		}
+		acceleration = 0;
 	}
 
 	float getRadius() const { return radius; }
