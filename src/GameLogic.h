@@ -1,13 +1,13 @@
 #pragma once
 
-#include "PhysicSolver.h"
+#include "PhysicSolver2d.h"
 
 class GameLogic
 {
 private:
-    PhysicSolver& sandbox;
+    PhysicSolver2d& sandbox;
 public:
-    GameLogic(PhysicSolver& sandbox) : sandbox(sandbox) {}
+    GameLogic(PhysicSolver2d& sandbox) : sandbox(sandbox) {}
     void update() {
     }
     ~GameLogic() = default;

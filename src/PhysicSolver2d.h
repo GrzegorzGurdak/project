@@ -10,16 +10,17 @@
 #include "PhysicBody2d.h"
 #include "PhysicLink2d.h"
 
-#include <omp.h>
+namespace{
+    constexpr int CHUNK_CAPACITY = 4;
+}
 
 struct Chunk{
-    #define CHUNK_CAPACITY 3
     PhysicBody2d* objects[CHUNK_CAPACITY];
     uint8_t size{ 0 };
     bool isActive{false};
     inline void push_back(PhysicBody2d* obj) {
         if(isFull()){
-            std::cout << "Chunk is full" << std::endl;
+            // std::cout << "Chunk is full" << std::endl;
             return;
         }
         objects[size] = obj;
@@ -66,8 +67,8 @@ class ChunkGrid {
 public:
     ChunkGrid(int cS, int wW, int wH);
 
-    void assignGrid(std::vector<PhysicBody2d*>& obj);
-    void updateChunkSize(PhysicBody2d* obj);
+    void assignGrid(const std::vector<PhysicBody2d*>& obj);
+    void updateChunkSize(const PhysicBody2d* obj);
 
     ///make sure to reassign grid "assignGrid()", before using
     void update_collision();
@@ -104,22 +105,22 @@ protected:
 
 };
 
-class PhysicSolver{
+class PhysicSolver2d{
 public:
-    PhysicSolver(ChunkGrid g) : grid { g } {}
-    ~PhysicSolver() {
+    PhysicSolver2d(ChunkGrid g) : grid { g } {}
+    ~PhysicSolver2d() {
         for (auto& i : objects) { delete(i); }
         for (auto& i : links) { delete(i); }
     }
 
 
-    PhysicSolver& add(PhysicBody2d* obj);
-    PhysicSolver& add(Vec2 position, float size, bool isKinematic = false, sf::Color color = sf::Color::White);
-    PhysicSolver& addLink(PhysicLink2d* obj) { links.push_back(obj); return *this; }
+    PhysicSolver2d& add(PhysicBody2d* obj); //deprecated
+    PhysicSolver2d& add(Vec2 position, float size, bool isKinematic = false, sf::Color color = sf::Color::White);
+    PhysicSolver2d& addLink(PhysicBody2d* obj1, PhysicBody2d* obj2, float len);
 
-    void update(long long (&simResult)[6], const float dtime, const int sub_step = 1);
+    void update(const float d_time, const int sub_step = 1);
 
-    void update_position(const float dtime);
+    void update_position(const float d_time);
     void update_acceleration();
     void update_constraints();
     void update_collision();
@@ -145,13 +146,10 @@ public:
     ChunkGrid& getChunkGrid() { return grid; }
     const ChunkGrid& getChunkGrid() const { return grid; }
     const std::vector<PhysicBody2d*>& getObjects() const { return objects; }
-    void deleteObject(PhysicBody2d* obj) {
-        auto it = std::find(objects.begin(), objects.end(), obj);
-        if (it != objects.end()) {
-            objects.erase(it);
-            delete(obj);
-        }
-    }
+    void deleteObject(PhysicBody2d* obj);
+    void clear();
+
+    long long getSimResult(const size_t i);
 
 protected:
     std::vector<PhysicBody2d*> objects{};
@@ -163,14 +161,15 @@ protected:
     Vec2 accelerationValue;
     std::function<Vec2(PhysicBody2d*, std::vector<PhysicBody2d*>&)> acceleration_function;
     std::function<Vec2(PhysicBody2d*)> constraint_fun;
+    long long simResult[6];
 };
 
 class PhysicDrawer : public sf::Drawable {
 public:
-    PhysicDrawer(const PhysicSolver& pS, const Vec2 wS, const float cS);
+    PhysicDrawer(const PhysicSolver2d& pS, const Vec2 wS, const float cS);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 protected:
-    const PhysicSolver& physicSolver;
+    const PhysicSolver2d& physicSolver;
     const Vec2 windowSize;
     const float particleSize;
 };

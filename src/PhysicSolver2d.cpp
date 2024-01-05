@@ -1,7 +1,9 @@
-#include "PhysicSolver.h"
+#include "PhysicSolver2d.h"
 #include <chrono>
 #include <SFML/OpenGL.hpp>
 #include <gl/glu.h>
+
+#include <omp.h>
 
 ////ChunkGrid:
 
@@ -13,20 +15,22 @@ ChunkGrid::ChunkGrid(int cS, int wW, int wH) :
     grid = std::vector<Chunk>(grid_width * grid_height);
 }
 
-void ChunkGrid::assignGrid(std::vector<PhysicBody2d*>& obj) {
+void ChunkGrid::assignGrid(const std::vector<PhysicBody2d*>& obj) {
     for (auto& i : grid) {
         i.clear();
     }
 
     for (auto& i : obj) {
-        int x = int(i->getPos().x / cellSize);
-        int y = int(i->getPos().y / cellSize);
-        if (0 <= x && x < grid_width && 0 <= y && y < grid_height)
-            grid.at(x + y * grid_width).push_back(i);
+        if(i->getPos().x >= 0 && i->getPos().x < window_width && i->getPos().y >= 0 && i->getPos().y < window_height){
+            int x = int(i->getPos().x / cellSize);
+            int y = int(i->getPos().y / cellSize);
+            if (0 <= x && x < grid_width && 0 <= y && y < grid_height)
+                grid.at(x + y * grid_width).push_back(i);
+        }
     }
 }
 
-void ChunkGrid::updateChunkSize(PhysicBody2d* obj) {
+void ChunkGrid::updateChunkSize(const PhysicBody2d* obj) {
     if (obj->getRadius() * 2 > cellSize) {
         cellSize = (int)ceil(obj->getRadius() * 2);
         grid_width = window_width / cellSize;
@@ -73,9 +77,10 @@ void ChunkGrid::solve_collision(Chunk& central_chunk, Chunk& neighboring_chunk) 
                     Vec2 diff = i->getPos() - j->getPos();
                     float diffLen = diff.length();
                     float dist = diffLen - (i->getRadius() + j->getRadius());
+                    Vec2 transform = diff / diffLen * (dist / 2) * 0.8f;
                     if (dist < 0) {
-                        if (i->isKinematic) i->current_position -= diff / diffLen * (dist / 2) * 0.8f;
-                        if (j->isKinematic) j->current_position += diff / diffLen * (dist / 2) * 0.8f;
+                        if (i->isKinematic) i->current_position -= transform;
+                        if (j->isKinematic) j->current_position += transform;
                     }
                 }
                 else if (collision_type == FUNC) {
@@ -98,15 +103,15 @@ int ChunkGrid::count() {
     return sum;
 }
 
-////PhysicSolver:
+////PhysicSolver2d:
 
-PhysicSolver& PhysicSolver::add(PhysicBody2d* obj) { //depraicated
+PhysicSolver2d& PhysicSolver2d::add(PhysicBody2d* obj) { //depraicated
     objects.push_back(obj);
     grid.updateChunkSize(obj);
     return *this;
 }
 
-PhysicSolver& PhysicSolver::add(Vec2 position, float size, bool isKinematic, sf::Color color) {
+PhysicSolver2d& PhysicSolver2d::add(Vec2 position, float size, bool isKinematic, sf::Color color) {
     int x = int(position.x / grid.getChunkSize());
     int y = int(position.y / grid.getChunkSize());
     if(5 <= x && x < grid.getWidth()-5 && 5 <= y && y < grid.getHeight()-5 && grid.getChunk(x, y).canAdd())//!grid.getChunk(x, y).isFull())
@@ -115,15 +120,17 @@ PhysicSolver& PhysicSolver::add(Vec2 position, float size, bool isKinematic, sf:
         objects.push_back(obj);
         grid.updateChunkSize(obj);
         grid.assignGrid(objects);
-        //std::cout << "added" << std::endl;
-        // std::cout << "x: " << x << " y: " << y << "\n";
-        //grid.getGrid().at(x + y * grid.getWidth()).push_back(obj);
     }
     return *this;
 }
+PhysicSolver2d& PhysicSolver2d::addLink(PhysicBody2d* obj1, PhysicBody2d* obj2, float len){
+    PhysicLink2d* obj = new PhysicLink2d(obj1, obj2, len);
+    links.push_back(obj);
+    return *this;
+}
 
-void PhysicSolver::update(long long (&simResult)[6], const float dtime, const int sub_step) {
-    float sub_dt = dtime / sub_step;
+void PhysicSolver2d::update(const float d_time, const int sub_step) {
+    float sub_dt = d_time / sub_step;
 
     for (int i = 0; i < sub_step; i++) {
         std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -145,6 +152,7 @@ void PhysicSolver::update(long long (&simResult)[6], const float dtime, const in
         begin = std::chrono::steady_clock::now();
         // grid.update_collision();
         grid.update_collision_mt();//multi_thread
+        // update_collision();
         end = std::chrono::steady_clock::now();
         simResult[4] = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
         begin = std::chrono::steady_clock::now();
@@ -154,13 +162,17 @@ void PhysicSolver::update(long long (&simResult)[6], const float dtime, const in
     }
 }
 
-void PhysicSolver::update_position(const float dtime)
+void PhysicSolver2d::update_position(const float d_time)
 {
-    for (auto& i : objects)
-        i->update_position(dtime);
+    for (auto& i : objects) {
+        if (i->getPos().x != i->getPos().x || i->getPos().y != i->getPos().y) {
+            deleteObject(i);
+        }
+        else i->update_position(d_time);
+    }
 }
 
-void PhysicSolver::update_acceleration() {
+void PhysicSolver2d::update_acceleration() {
     if(acceleration_type == VALUE)
         for (auto& i : objects)
             i->accelerate(accelerationValue);
@@ -169,7 +181,7 @@ void PhysicSolver::update_acceleration() {
             i->accelerate(acceleration_function(i, objects));
 }
 
-void PhysicSolver::update_constraints() {
+void PhysicSolver2d::update_constraints() {
     if (constraint_type == DEFAULT) {
         Vec2 sphere_centre(350, 350);
         float radius = 300;
@@ -190,7 +202,7 @@ void PhysicSolver::update_constraints() {
     }
 }
 
-void PhysicSolver::update_collision() {
+void PhysicSolver2d::update_collision() {
     for (auto& i : objects) {
         for (auto& j : objects)
         {
@@ -208,40 +220,40 @@ void PhysicSolver::update_collision() {
     }
 }
 
-void PhysicSolver::set_acceleration(const Vec2 accVal) {
+void PhysicSolver2d::set_acceleration(const Vec2 accVal) {
     acceleration_type = VALUE;
     accelerationValue = accVal;
 }
-void PhysicSolver::set_acceleration(std::function<Vec2(PhysicBody2d*, std::vector<PhysicBody2d*>&)> accFun) {
+void PhysicSolver2d::set_acceleration(std::function<Vec2(PhysicBody2d*, std::vector<PhysicBody2d*>&)> accFun) {
     acceleration_type = FUNC;
     acceleration_function = accFun;
 }
-void PhysicSolver::set_acceleration() {
+void PhysicSolver2d::set_acceleration() {
     acceleration_type = NONE;
 }
 
-void PhysicSolver::set_constraints_def() {
+void PhysicSolver2d::set_constraints_def() {
     constraint_type = DEFAULT;
 }
-void PhysicSolver::set_constraints(std::function<Vec2(PhysicBody2d*)> conFun) {
+void PhysicSolver2d::set_constraints(std::function<Vec2(PhysicBody2d*)> conFun) {
     constraint_type = FUNC;
     constraint_fun = conFun;
 }
-void PhysicSolver::set_constraints() {
+void PhysicSolver2d::set_constraints() {
     constraint_type = NONE;
 }
 
-std::pair<bool, PhysicBody2d*> PhysicSolver::pop_from_position(const Vec2& cord) {
+std::pair<bool, PhysicBody2d*> PhysicSolver2d::get_from_position(const Vec2& cord) {
     auto found = std::find_if(objects.begin(), objects.end(), [&cord](auto& i) {return i->isHere(cord); });
     if (found != objects.end()) {
-        PhysicBody2d *r = * found;
+        PhysicBody2d *r = *found;
         //objects.erase(found);
         return { true, r };
     }
     return { false, &PhysicBody2d::nullPB };
 }
 
-std::pair<bool, PhysicBody2d*> PhysicSolver::get_from_position(const Vec2& cord) {
+std::pair<bool, PhysicBody2d*> PhysicSolver2d::pop_from_position(const Vec2& cord) {
     auto found = std::find_if(objects.begin(), objects.end(), [&cord](auto& i) {return i->isHere(cord); });
     if (found != objects.end()) {
         PhysicBody2d *r = *found;
@@ -251,9 +263,44 @@ std::pair<bool, PhysicBody2d*> PhysicSolver::get_from_position(const Vec2& cord)
     return { false, &PhysicBody2d::nullPB };
 }
 
+void PhysicSolver2d::deleteObject(PhysicBody2d* obj) {
+    auto it = std::find(objects.begin(), objects.end(), obj);
+    if (it != objects.end()) {
+        objects.erase(it);
+        // auto it2 = std::find_if(links.begin(), links.end(), [obj](auto& i) {return &i->getPB1() == obj || &i->getPB2() == obj; });
+        // if (it2 != links.end()){
+        //     delete(*it2);
+        //     links.erase(it2);
+        // }
+        // multiple links
+        for (auto it2 = links.begin(); it2 != links.end(); ) {
+            if ((*it2)->getPB1() == obj || (*it2)->getPB2() == obj) {
+                delete(*it2);
+                it2 = links.erase(it2);
+            }
+            else
+                ++it2;
+        }
+        delete(obj);
+    }
+}
+
+void PhysicSolver2d::clear() {
+    for (auto& i : objects) { delete(i); }
+    for (auto& i : links) { delete(i); }
+    objects.clear();
+    links.clear();
+}
+
+long long PhysicSolver2d::getSimResult(const size_t i) {
+    if(i<0 || i>5)
+        return 0;
+    return simResult[i];
+}
+
 //PhysicDrawer:
 
-PhysicDrawer::PhysicDrawer(const PhysicSolver& pS, const Vec2 wS, const float cS) : physicSolver{ pS }, windowSize{ wS }, particleSize{cS}
+PhysicDrawer::PhysicDrawer(const PhysicSolver2d& pS, const Vec2 wS, const float cS) : physicSolver{ pS }, windowSize{ wS }, particleSize{cS}
 {
     glPointSize(particleSize + 1.f + 2.f);
 }
@@ -279,10 +326,10 @@ void PhysicDrawer::draw(sf::RenderTarget& target, sf::RenderStates states) const
     for (const auto& i : physicSolver.links)
     {
         //target.draw(i->getFigure(), states);
-        glColor3f(i->getPB1().getColor().r / 255.f, i->getPB1().getColor().g / 255.f, i->getPB1().getColor().b / 255.f);
-        glVertex3f(i->getPB1().getPos().x, windowSize.y - i->getPB1().getPos().y, 0);
-        glColor3f(i->getPB2().getColor().r / 255.f, i->getPB2().getColor().g / 255.f, i->getPB2().getColor().b / 255.f);
-        glVertex3f(i->getPB2().getPos().x, windowSize.y - i->getPB2().getPos().y, 0);
+        glColor3f(i->getPB1()->getColor().r / 255.f, i->getPB1()->getColor().g / 255.f, i->getPB1()->getColor().b / 255.f);
+        glVertex3f(i->getPB1()->getPos().x, windowSize.y - i->getPB1()->getPos().y, 0);
+        glColor3f(i->getPB2()->getColor().r / 255.f, i->getPB2()->getColor().g / 255.f, i->getPB2()->getColor().b / 255.f);
+        glVertex3f(i->getPB2()->getPos().x, windowSize.y - i->getPB2()->getPos().y, 0);
     }
     glEnd();
 }

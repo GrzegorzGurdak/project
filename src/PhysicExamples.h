@@ -56,8 +56,8 @@ namespace PhysicExamples {
 	}
 
 	namespace Sandbox {
-		PhysicSolver* cloth(Vec2 windowSize, Vec2 startPos, int sizeX, int sizeY, float linkLen = 30 ,float ballSize = 10.f) {
-			PhysicSolver* sandbox = new PhysicSolver(ChunkGrid(33, (int)windowSize.x, (int)windowSize.y));
+		PhysicSolver2d* cloth(Vec2 windowSize, Vec2 startPos, int sizeX, int sizeY, float linkLen = 30 ,float ballSize = 10.f) {
+			PhysicSolver2d* sandbox = new PhysicSolver2d(ChunkGrid(33, (int)windowSize.x, (int)windowSize.y));
 			sandbox->set_constraints(Constrains::boxRestrain(Vec2(30, 30), windowSize - Vec2(30, 30)));
 
 			std::vector<std::vector<PhysicBody2d*>> pBs;
@@ -73,7 +73,7 @@ namespace PhysicExamples {
 				pBs.back().push_back(upper);
 				sandbox->add(upper);
 				for (int j = 1; j < sizeY; j++) {
-					PhysicBody2d* npb = new PhysicBody2d(startPos + Vec2(linkLen * i, linkLen * j), ballSize);
+					PhysicBody2d* npb = new PhysicBody2d(startPos + Vec2(linkLen * i, linkLen * j), ballSize, true);
 					pBs.back().push_back(npb);
 					sandbox->add(npb);
 				}
@@ -83,15 +83,13 @@ namespace PhysicExamples {
 					for (int i = 0; i < 2; i++)
 						for (int j = 0; j < 2; j++){
 							if(i!=j)
-								sandbox->addLink(
-									new PhysicLink2d(*pBs.at(x).at(y), *pBs.at(x + i).at(y + j), linkLen)
-								);
+								sandbox->addLink(pBs.at(x).at(y), pBs.at(x + i).at(y + j), linkLen);
 						}
 			for (int x = 0; x < sizeX - 1; x++)
-				sandbox->addLink(new PhysicLink2d(*pBs.at(x).back(), *pBs.at(x + 1).back(), linkLen));
+				sandbox->addLink(pBs.at(x).back(), pBs.at(x + 1).back(), linkLen);
 
 			for (int y = 0; y < sizeY - 1; y++)
-				sandbox->addLink(new PhysicLink2d(*pBs.back().at(y), *pBs.back().at(y + 1), linkLen));
+				sandbox->addLink(pBs.back().at(y), pBs.back().at(y + 1), linkLen);
 
 			return sandbox;
 		}

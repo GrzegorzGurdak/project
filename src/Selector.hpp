@@ -1,12 +1,12 @@
 #include <vector>
 
-#include "PhysicSolver.h"
+#include "PhysicSolver2d.h"
 
 
 class Selector {
 public:
     Selector(ChunkGrid& cg);// : chunkGrid{ cg } {}
-    ~ Selector();
+    ~Selector();
     void select(Vec2 pos, float radius);
     std::vector<PhysicBody2d*>& getSelected() { return selected; }
 

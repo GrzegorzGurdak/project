@@ -29,11 +29,13 @@ struct Vec2
     Vec2 operator* (const Vec2 other) const { return Vec2(x * other.x, y * other.y); }
     Vec2 operator*= (const Vec2 other) { x *= other.x; y *= other.y; return *this; }
 
+    bool operator== (const Vec2 other) const { return x == other.x && y == other.y; }
+    bool operator!= (const Vec2 other) const { return x != other.x || y != other.y; }
 
     Vec2 operator* (const float _m) const { return Vec2(x * _m, y * _m); }
     Vec2 operator/ (const float _m) const { return Vec2(x / _m, y / _m); }
 
-    operator sf::Vector2f() const { return sf::Vector2f(x, y);  }
+    operator sf::Vector2f() const { return sf::Vector2f(x, y); }
 
     float length() const { return sqrt(x*x + y*y); };
 

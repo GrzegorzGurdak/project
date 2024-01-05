@@ -8,7 +8,7 @@
 #include <deque>
 #include <SFML/Graphics.hpp>
 #include "PhysicBody2d.h"
-#include "PhysicSolver.h"
+#include "PhysicSolver2d.h"
 #include "GUI_elements.h"
 
 class ColorMap {
@@ -33,7 +33,7 @@ public:
 		}
 	}
 
-	void pour(PhysicSolver& sandbox, StatElement& statElement, int numOfParticle = 9e3){
+	void pour(PhysicSolver2d& sandbox, StatElement& statElement, int numOfParticle = 9e3){
 		if (sandbox.getObjectAmount() < numOfParticle) {
 			for (int i = 0; i < 5; i++)
 				sandbox.add(
@@ -58,7 +58,7 @@ private:
 namespace ImageGenerator
 {
 
-	void exportResult(const PhysicSolver& obj, std::string fname) {
+	void exportResult(const PhysicSolver2d& obj, std::string fname) {
 		const std::vector<PhysicBody2d*> &vec = obj.getObjects();
 		std::ofstream out(fname);
 		for (auto& i : vec) {

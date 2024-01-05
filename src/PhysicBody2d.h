@@ -13,14 +13,14 @@ struct PhysicBody2d
 		color = sf::Color(rand() % 256, rand() % 256, rand() % 256);
 	}
 
-	void update_position(const float dtime) {
+	void update_position(const float d_time) {
 		if (isKinematic) {
 			const Vec2 velocity = current_position - old_position; // velocity [/dtime]
 			old_position = current_position;
-			current_position += velocity + acceleration * dtime * dtime; //verlet
+			current_position += velocity + acceleration * d_time * d_time; //verlet
 		}
 		else{
-			old_position = current_position;
+			current_position = old_position;
 		}
 		acceleration = 0;
 	}
@@ -34,20 +34,21 @@ struct PhysicBody2d
 	Vec2 getPos() const { return current_position; }
 
 	void accelerate(const Vec2 add_acc) { acceleration += add_acc; }
-	void move(Vec2 p) { old_position = current_position = p;} // cs.setPosition(p - Vec2{ radius,radius }); 
+	void move(Vec2 p) { old_position = current_position = p;} // cs.setPosition(p - Vec2{ radius,radius });
 
 	bool isHere(Vec2 here) {return (current_position - here).length() < radius; }
-	bool isKinematic = true;
 
 	static PhysicBody2d nullPB;
 
-protected:
+	bool isKinematic = true;
+
+public:
 	float radius;
 	Vec2 current_position;
 	Vec2 old_position;
 	Vec2 acceleration = {};
 	sf::Color color;
-	friend class PhysicSolver;
+	friend class PhysicSolver2d;
 	friend class ChunkGrid;
 	friend class PhysicLink2d;
 };

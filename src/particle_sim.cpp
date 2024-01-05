@@ -15,7 +15,7 @@
 #include "MVec.h"
 #include "Selector.hpp"
 #include "PhysicBody2d.h"
-#include "PhysicSolver.h"
+#include "PhysicSolver2d.h"
 #include "PhysicExamples.h"
 #include "OpenGLGraphics.h"
 #include "ColorConv.h"
@@ -26,6 +26,7 @@
 
 int main(int argc, char** argv)
 {
+	std::cout << GL_MAX_NAME_STACK_DEPTH << std::endl;
 	OpenGLGraphics oglGraphics(700, 1.5f, 0);
 
 	float particleSize = 4;
@@ -42,10 +43,10 @@ int main(int argc, char** argv)
 
 	StatElement statElement(font);
 
-	PhysicSolver sandbox(ChunkGrid(int(particleSize) * 2, window.getSize().x, window.getSize().y)); //30,33,36
-	Selector selector(sandbox.getChunkGrid());
+	PhysicSolver2d sandbox(ChunkGrid(int(particleSize) * 2, window.getSize().x, window.getSize().y)); //30,33,36
 	// \/  \/  \/  MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!\/  \/  \/
-	//PhysicSolver sandbox = *PhysicExamples::Sandbox::cloth(window.getSize(), {250,200},10,15); // losing pointer to allocated data
+	// PhysicSolver2d sandbox = *PhysicExamples::Sandbox::cloth(window.getSize(), {250,200},10,15); // losing pointer to allocated data
+	Selector selector(sandbox.getChunkGrid());
 	PhysicDrawer sandbox_draw(sandbox, window.getSize(), particleSize);
 	GameLogic gameLogic(sandbox);
 	//sandbox.add(PhysicBody2d(Vec2(150, 180),5)).add(PhysicBody2d(Vec2(450, 180),5));
@@ -57,8 +58,6 @@ int main(int argc, char** argv)
 	bool paused = false;
 
 	std::pair<bool, PhysicBody2d*> dragBuffer;
-
-	long long simResult[6];
 
 	//srand(time(NULL));
 	srand(5);
@@ -85,9 +84,12 @@ int main(int argc, char** argv)
 	bool shiftPressed = false;
 	bool kinematicStateBefore;
 
-	PhysicBody2d* debugBuffer;
+	PhysicBody2d* debugBuffer = &PhysicBody2d::nullPB;
 
 	window.setMouseCursorVisible(false);
+
+	// const GLubyte *version =  glGetString(GL_VERSION);
+	// printf("GL Version (string)  : %s\n", version);
 
 	while (window.isOpen()) {
 		window.clear();
@@ -109,18 +111,22 @@ int main(int argc, char** argv)
 				}
 				else if(event.key.code == sf::Keyboard::D) {
 					selector.select(mousePosition, cursorSize);
-					std::cout<<selector.getSelected().size()<<"\n";
+					// std::cout<<selector.getSelected().size()<<"\n";
 
 					for( auto &i : selector.getSelected())
 						sandbox.deleteObject(i);
 				}
 				else if(event.key.code == sf::Keyboard::M) {
 					selector.select(mousePosition, cursorSize);
-					std::cout<<selector.getSelected().size()<<"\n";
+					// std::cout<<selector.getSelected().size()<<"\n";
 
 					for( auto &i : selector.getSelected())
 						if (i != dragBuffer.second)
-							sandbox.addLink(new PhysicLink2d(*dragBuffer.second, *i, 100));
+							sandbox.addLink(dragBuffer.second, i, 100);
+				}
+				else if(event.key.code == sf::Keyboard::C) {
+					sandbox.clear();
+					debugBuffer = &PhysicBody2d::nullPB;
 				}
 			}
 
@@ -141,7 +147,7 @@ int main(int argc, char** argv)
 				mousePosition.set(event.mouseMove.x, event.mouseMove.y);
 
 			if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right && shiftPressed) {
-				dragBuffer = sandbox.pop_from_position({ event.mouseButton.x,event.mouseButton.y });
+				dragBuffer = sandbox.get_from_position({ event.mouseButton.x,event.mouseButton.y });
 				if (dragBuffer.second != &PhysicBody2d::nullPB) {
 					debugBuffer = dragBuffer.second;
 					dragEnable = true;
@@ -150,12 +156,12 @@ int main(int argc, char** argv)
 				}
 			}
 			else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right) {
-				dragBuffer = sandbox.pop_from_position({ event.mouseButton.x,event.mouseButton.y });
+				dragBuffer = sandbox.get_from_position({ event.mouseButton.x,event.mouseButton.y });
 			}
 			else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Right) {
 				if (dragBuffer.first && !dragEnable) {
-					auto pr = sandbox.pop_from_position({ event.mouseButton.x,event.mouseButton.y });
-					if (pr.first && pr.second != dragBuffer.second) sandbox.addLink(new PhysicLink2d(*dragBuffer.second, *pr.second, 100));
+					auto pr = sandbox.get_from_position({ event.mouseButton.x,event.mouseButton.y });
+					if (pr.first && pr.second != dragBuffer.second) sandbox.addLink(dragBuffer.second, pr.second, 100);
 					dragBuffer.first = false;
 				}
 				if (dragBuffer.first) dragBuffer.second->isKinematic = kinematicStateBefore;
@@ -177,16 +183,16 @@ int main(int argc, char** argv)
 		}
 		if (!paused) {
 			auto start = std::chrono::steady_clock::now();
-			sandbox.update(simResult, 1 / 60.f, 8);
+			sandbox.update(1 / 60.f, 8);
 			auto end = std::chrono::steady_clock::now();
 
 			statElement.simTimeAdd(int(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()));
 		}
 
 		// for (int i = 0; i < 6; i++)
-		// 	std::cout << simResult[i] << std::setw(6);
+		// 	std::cout << sandbox.getSimResult(i) << std::setw(6);
 		// std::cout << "\n";
-		std::cout << "Body: pos:" << debugBuffer->getPos() << ", oldPos:" << debugBuffer->getOldPos() << "\n";
+		//std::cout << "Body: pos:" << debugBuffer->getPos() << ", oldPos:" << debugBuffer->getOldPos() << "\n";
 
 		statElement.update(event);
 
