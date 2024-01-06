@@ -26,7 +26,7 @@
 
 int main(int argc, char** argv)
 {
-	std::cout << GL_MAX_NAME_STACK_DEPTH << std::endl;
+	// std::cout << GL_MAX_NAME_STACK_DEPTH << std::endl;
 	OpenGLGraphics oglGraphics(700, 1.5f, 0);
 
 	float particleSize = 4;
@@ -41,11 +41,12 @@ int main(int argc, char** argv)
 
 	sf::Font font; font.loadFromFile("fonts/arial.ttf");
 
-	StatElement statElement(font);
+	SimStat statElement(font);
 
 	PhysicSolver2d sandbox(ChunkGrid(int(particleSize) * 2, window.getSize().x, window.getSize().y)); //30,33,36
 	// \/  \/  \/  MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!\/  \/  \/
 	// PhysicSolver2d sandbox = *PhysicExamples::Sandbox::cloth(window.getSize(), {250,200},10,15); // losing pointer to allocated data
+	// PhysicSolver2d sandbox = *PhysicExamples::Sandbox::game(window.getSize(), particleSize);
 	Selector selector(sandbox.getChunkGrid());
 	PhysicDrawer sandbox_draw(sandbox, window.getSize(), particleSize);
 	GameLogic gameLogic(sandbox);
@@ -181,6 +182,7 @@ int main(int argc, char** argv)
 			clock.restart();
 			statElement.objectAmountUpdate(sandbox.getObjectAmount());
 		}
+
 		if (!paused) {
 			auto start = std::chrono::steady_clock::now();
 			sandbox.update(1 / 60.f, 8);
@@ -188,6 +190,11 @@ int main(int argc, char** argv)
 
 			statElement.simTimeAdd(int(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()));
 		}
+
+		// selector.select(Vec2(570,570), 100);
+		// if(selector.getSelected().size() > 400){
+		// 	statElement.setWinStatus(true);
+		// }
 
 		// for (int i = 0; i < 6; i++)
 		// 	std::cout << sandbox.getSimResult(i) << std::setw(6);

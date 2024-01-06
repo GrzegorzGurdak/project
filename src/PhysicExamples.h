@@ -93,6 +93,63 @@ namespace PhysicExamples {
 
 			return sandbox;
 		}
+
+		PhysicSolver2d* game(Vec2 windowSize, int ballSize = 10) {
+			PhysicSolver2d* sandbox = new PhysicSolver2d(ChunkGrid(ballSize, (int)windowSize.x, (int)windowSize.y));
+			sandbox->set_constraints();
+
+			float diff = float(ballSize);
+
+			for (int i=0; i<windowSize.x; i += (int)diff){
+				for (int j = 0; j < windowSize.y; j += (int)diff) {
+					if ((i - 570) * (i - 570) + (j - 570) * (j - 570) > 100 * 100 && (i - 170) * (i - 170) + (j - 170) * (j - 170) > 100 * 100)
+						sandbox->insert(Vec2(i, j), float(ballSize), false, sf::Color(90,50,20));
+				}
+			}
+
+			diff = ballSize * 2 + 0.1f;
+
+			for (float i = 50; i < 400; i+=diff){
+				for (float j = 50; j < 400; j += diff) {
+					if ( (i - 170) * (i - 170) + (j - 170) * (j - 170) < 99 * 99) {
+						sandbox->insert(Vec2(i, j), float(ballSize), true, sf::Color(20,20,255));
+					}
+				}
+			}
+
+			// std::vector<std::vector<PhysicBody2d*>> pBs;
+			// //int sizeX = 10;
+			// //int sizeY = 10;
+			// //Vec2 startPos = { 100,100 };
+			// //float linkLen = 30;
+			// for (int i = 0; i < sizeX; i++) {
+			// 	pBs.push_back(std::vector<PhysicBody2d*>());
+			// 	Vec2 tmp = startPos + Vec2(linkLen * i, 0.f);
+			// 	PhysicBody2d* upper = new PhysicBody2d(startPos + Vec2(linkLen * i, 0.f), ballSize);
+			// 	upper->isKinematic = false;
+			// 	pBs.back().push_back(upper);
+			// 	sandbox->add(upper);
+			// 	for (int j = 1; j < sizeY; j++) {
+			// 		PhysicBody2d* npb = new PhysicBody2d(startPos + Vec2(linkLen * i, linkLen * j), ballSize, true);
+			// 		pBs.back().push_back(npb);
+			// 		sandbox->add(npb);
+			// 	}
+			// }
+			// for (int x = 0; x < sizeX - 1; x++)
+			// 	for (int y = 0; y < sizeY - 1; y++)
+			// 		for (int i = 0; i < 2; i++)
+			// 			for (int j = 0; j < 2; j++){
+			// 				if(i!=j)
+			// 					sandbox->addLink(pBs.at(x).at(y), pBs.at(x + i).at(y + j), linkLen);
+			// 			}
+			// for (int x = 0; x < sizeX - 1; x++)
+			// 	sandbox->addLink(pBs.at(x).back(), pBs.at(x + 1).back(), linkLen);
+
+			// for (int y = 0; y < sizeY - 1; y++)
+			// 	sandbox->addLink(pBs.back().at(y), pBs.back().at(y + 1), linkLen);
+
+			return sandbox;
+		}
 	}
 
 	namespace Collisions {

@@ -123,6 +123,20 @@ PhysicSolver2d& PhysicSolver2d::add(Vec2 position, float size, bool isKinematic,
     }
     return *this;
 }
+
+PhysicSolver2d& PhysicSolver2d::insert(Vec2 position, float size, bool isKinematic, sf::Color color) {
+    int x = int(position.x / grid.getChunkSize());
+    int y = int(position.y / grid.getChunkSize());
+    if(5 <= x && x < grid.getWidth()-5 && 5 <= y && y < grid.getHeight()-5)
+    {
+        PhysicBody2d* obj = new PhysicBody2d(position, size, isKinematic, color);
+        objects.push_back(obj);
+        grid.updateChunkSize(obj);
+        grid.assignGrid(objects);
+    }
+    return *this;
+}
+
 PhysicSolver2d& PhysicSolver2d::addLink(PhysicBody2d* obj1, PhysicBody2d* obj2, float len){
     PhysicLink2d* obj = new PhysicLink2d(obj1, obj2, len);
     links.push_back(obj);

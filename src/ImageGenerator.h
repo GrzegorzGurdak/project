@@ -33,7 +33,7 @@ public:
 		}
 	}
 
-	void pour(PhysicSolver2d& sandbox, StatElement& statElement, int numOfParticle = 9e3){
+	void pour(PhysicSolver2d& sandbox, SimStat& statElement, int numOfParticle = 9e3){
 		if (sandbox.getObjectAmount() < numOfParticle) {
 			for (int i = 0; i < 5; i++)
 				sandbox.add(

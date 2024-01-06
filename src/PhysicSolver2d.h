@@ -116,6 +116,7 @@ public:
 
     PhysicSolver2d& add(PhysicBody2d* obj); //deprecated
     PhysicSolver2d& add(Vec2 position, float size, bool isKinematic = false, sf::Color color = sf::Color::White);
+    PhysicSolver2d& insert(Vec2 position, float size, bool isKinematic = false, sf::Color color = sf::Color::White);
     PhysicSolver2d& addLink(PhysicBody2d* obj1, PhysicBody2d* obj2, float len);
 
     void update(const float d_time, const int sub_step = 1);
