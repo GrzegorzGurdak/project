@@ -43,10 +43,10 @@ int main(int argc, char** argv)
 
 	SimStat statElement(font);
 
-	PhysicSolver2d sandbox(ChunkGrid(int(particleSize) * 2, window.getSize().x, window.getSize().y)); //30,33,36
+	// PhysicSolver2d sandbox(ChunkGrid(int(particleSize) * 2, window.getSize().x, window.getSize().y)); //30,33,36
 	// \/  \/  \/  MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!\/  \/  \/
 	// PhysicSolver2d sandbox = *PhysicExamples::Sandbox::cloth(window.getSize(), {250,200},10,15); // losing pointer to allocated data
-	// PhysicSolver2d sandbox = *PhysicExamples::Sandbox::game(window.getSize(), particleSize);
+	PhysicSolver2d sandbox = *PhysicExamples::Sandbox::game(window.getSize(), int(particleSize));
 	Selector selector(sandbox.getChunkGrid());
 	PhysicDrawer sandbox_draw(sandbox, window.getSize(), particleSize);
 	GameLogic gameLogic(sandbox);
@@ -170,17 +170,25 @@ int main(int argc, char** argv)
 			}
 		}
 
-		if (mousePressed && clock.getElapsedTime().asMilliseconds() > 10) {
+		if (mousePressed && clock.getElapsedTime().asMilliseconds() > 10 && shiftPressed) {
 			for (int i = 0; i < 30; i++){
 				sandbox.add(
 					mousePosition + Vec2::random_rad(cursorSize),
-					particleSize,
-					!shiftPressed,
-					(shiftPressed ? sf::Color(90,50,20) : sf::Color(20,20,255)));
+					particleSize, true, sf::Color(20,20,255));
+					//!shiftPressed,
+					//(shiftPressed ? sf::Color(90,50,20) : sf::Color(20,20,255)));
 			}
 
 			clock.restart();
 			statElement.objectAmountUpdate(sandbox.getObjectAmount());
+		}
+
+		else if (mousePressed){
+			selector.select(mousePosition, cursorSize);
+
+			for( auto &i : selector.getSelected())
+				if(!i->isKinematic)
+					sandbox.deleteObject(i);
 		}
 
 		if (!paused) {
@@ -191,10 +199,10 @@ int main(int argc, char** argv)
 			statElement.simTimeAdd(int(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()));
 		}
 
-		// selector.select(Vec2(570,570), 100);
-		// if(selector.getSelected().size() > 400){
-		// 	statElement.setWinStatus(true);
-		// }
+		selector.select(Vec2(570,570), 100);
+		if(selector.getSelected().size() > 400){
+			statElement.setWinStatus(true);
+		}
 
 		// for (int i = 0; i < 6; i++)
 		// 	std::cout << sandbox.getSimResult(i) << std::setw(6);
