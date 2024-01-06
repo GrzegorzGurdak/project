@@ -29,10 +29,10 @@ int main(int argc, char** argv)
 	// std::cout << GL_MAX_NAME_STACK_DEPTH << std::endl;
 	OpenGLGraphics oglGraphics(700, 1.5f, 0);
 
-	float particleSize = 4;
+	float particleSize = 2;
 
 	sf::Clock clock;
-	sf::RenderWindow window(sf::VideoMode(770, 730), "Orbiting", sf::Style::Titlebar | sf::Style::Close, sf::ContextSettings(24, 8, 8, 4, 5)); //730
+	sf::RenderWindow window(sf::VideoMode(770, 730), "Particles", sf::Style::Titlebar | sf::Style::Close, sf::ContextSettings(24, 8, 8, 4, 5)); //730
 	sf::Event event;
 	window.setFramerateLimit(60);
 
@@ -176,7 +176,7 @@ int main(int argc, char** argv)
 					mousePosition + Vec2::random_rad(cursorSize),
 					particleSize,
 					!shiftPressed,
-					(shiftPressed ? sf::Color(90,50,20) : sf::Color(20,20,255)));
+					(shiftPressed ? sf::Color(10,180,10) : sf::Color(20,20,255)));
 			}
 
 			clock.restart();
