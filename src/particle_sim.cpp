@@ -19,14 +19,12 @@
 #include "PhysicExamples.h"
 #include "OpenGLGraphics.h"
 #include "ColorConv.h"
-// #include "ImageGenerator.h"
 #include "GUI_elements.h"
 #include "GameLogic.h"
 #include <gl/glu.h>
 
 int main(int argc, char** argv)
 {
-	// std::cout << GL_MAX_NAME_STACK_DEPTH << std::endl;
 	OpenGLGraphics oglGraphics(700, 1.5f, 0);
 
 	float particleSize = 4;
@@ -44,15 +42,13 @@ int main(int argc, char** argv)
 	SimStat statElement(font);
 
 	// PhysicSolver2d sandbox(ChunkGrid(int(particleSize) * 2, window.getSize().x, window.getSize().y)); //30,33,36
-	// \/  \/  \/  MEMORY LEAK!!!!!!!!!!!!!!!!!!!!!!!!!!!!\/  \/  \/
-	// PhysicSolver2d sandbox = *PhysicExamples::Sandbox::cloth(window.getSize(), {250,200},10,15); // losing pointer to allocated data
 	PhysicSolver2d sandbox = *PhysicExamples::Sandbox::game(window.getSize(), int(particleSize));
 	Selector selector(sandbox.getChunkGrid());
 	PhysicDrawer sandbox_draw(sandbox, window.getSize(), particleSize);
-	GameLogic gameLogic(sandbox);
-	//sandbox.add(PhysicBody2d(Vec2(150, 180),5)).add(PhysicBody2d(Vec2(450, 180),5));
+	GameLogic gameLogic(sandbox); //WIP
 
-	bool mousePressed = false;
+	bool lMousePressed = false;
+	bool rMousePressed = false;
 	Vec2 mousePosition;
 	float cursorSize = 40;
 
@@ -60,37 +56,13 @@ int main(int argc, char** argv)
 
 	std::pair<bool, PhysicBody2d*> dragBuffer;
 
-	//srand(time(NULL));
 	srand(5);
 	sf::err().rdbuf(NULL);
 
 	sandbox.set_acceleration(Vec2(0, 100));
-	// sandbox.set_acceleration(PhysicExamples::Acceleration::centreAcceleration({ 350,350 }, 10000));
-	/*sandbox.set_acceleration([](const PhysicBody2d* obj, const std::vector<PhysicBody2d*>&) {
-		return (obj->getOldPos() - obj->getPos()) * 600 * 0.9;
-	});*/
-	/*sandbox.set_acceleration([](const PhysicBody2d* obj, const std::vector<PhysicBody2d*>&) {
-		float r = obj->getRadius();
-		return Vec2(0, 1) * r * r * r;
-		});*/
-	// sandbox.set_constraints_def();
-	// sandbox.getChunkGrid().set_collision(PhysicExamples::Collisions::collision_with_viscosity);
 	sandbox.set_constraints(PhysicExamples::Constrains::boxRestrain({ 30,30 }, { 730,690 }));
-	// sandbox.getChunkGrid().set_collision(PhysicExamples::Collisions::squishy_collision);
-	// sandbox.set_constraints(PhysicExamples::Constrains::circleRestrain({ 350,350 }, 300));
-
-	// ColorMap colormap("fonts/mem.png", "result", { 30,30 }, { 730,690 });
-
-	bool dragEnable = false;
-	bool shiftPressed = false;
-	bool kinematicStateBefore;
-
-	PhysicBody2d* debugBuffer = &PhysicBody2d::nullPB;
 
 	window.setMouseCursorVisible(false);
-
-	// const GLubyte *version =  glGetString(GL_VERSION);
-	// printf("GL Version (string)  : %s\n", version);
 
 	while (window.isOpen()) {
 		window.clear();
@@ -98,92 +70,47 @@ int main(int argc, char** argv)
 			if (event.type == sf::Event::Closed || (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape))
 				window.close();
 
-			// if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
-			// 	ImageGenerator::exportResult(sandbox, "result");
-			// }
 			if (event.type == sf::Event::KeyPressed) {
 				if(event.key.code == sf::Keyboard::Space) paused = !paused;
 				else if(event.key.code == sf::Keyboard::Equal && cursorSize < 100) cursorSize += 1;
 				else if(event.key.code == sf::Keyboard::Dash && cursorSize > 1) cursorSize -= 1;
-				else if (event.key.code == sf::Keyboard::LShift) shiftPressed = true;
-				else if (event.key.code == sf::Keyboard::R && dragEnable){
-					if (dragBuffer.first)
-						kinematicStateBefore = !kinematicStateBefore;
-				}
-				else if(event.key.code == sf::Keyboard::D) {
-					selector.select(mousePosition, cursorSize);
-					// std::cout<<selector.getSelected().size()<<"\n";
-
-					for( auto &i : selector.getSelected())
-						sandbox.deleteObject(i);
-				}
-				else if(event.key.code == sf::Keyboard::M) {
-					selector.select(mousePosition, cursorSize);
-					// std::cout<<selector.getSelected().size()<<"\n";
-
-					for( auto &i : selector.getSelected())
-						if (i != dragBuffer.second)
-							sandbox.addLink(dragBuffer.second, i, 100);
-				}
 				else if(event.key.code == sf::Keyboard::C) {
 					sandbox.clear();
-					debugBuffer = &PhysicBody2d::nullPB;
 				}
 			}
 
-			else if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::LShift) {
-				shiftPressed = false;
-			}
-
-
 			if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-				mousePressed = true;
+				lMousePressed = true;
 				mousePosition.set(event.mouseButton.x, event.mouseButton.y);
 			}
 			else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
-				mousePressed = false;
+				lMousePressed = false;
 				mousePosition.set(event.mouseButton.x, event.mouseButton.y);
 			}
 			else if (event.type == sf::Event::MouseMoved)
 				mousePosition.set(event.mouseMove.x, event.mouseMove.y);
 
-			if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right && shiftPressed) {
-				dragBuffer = sandbox.get_from_position({ event.mouseButton.x,event.mouseButton.y });
-				if (dragBuffer.second != &PhysicBody2d::nullPB) {
-					debugBuffer = dragBuffer.second;
-					dragEnable = true;
-					kinematicStateBefore = dragBuffer.second->isKinematic;
-					dragBuffer.second->isKinematic = false;
-				}
+			if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right) {
+				rMousePressed = true;
+				mousePosition.set(event.mouseButton.x, event.mouseButton.y);
 			}
-			else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right) {
-				dragBuffer = sandbox.get_from_position({ event.mouseButton.x,event.mouseButton.y });
-			}
-			else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Right) {
-				if (dragBuffer.first && !dragEnable) {
-					auto pr = sandbox.get_from_position({ event.mouseButton.x,event.mouseButton.y });
-					if (pr.first && pr.second != dragBuffer.second) sandbox.addLink(dragBuffer.second, pr.second, 100);
-					dragBuffer.first = false;
-				}
-				if (dragBuffer.first) dragBuffer.second->isKinematic = kinematicStateBefore;
-				dragEnable = false;
+			if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Right) {
+				rMousePressed = false;
+				mousePosition.set(event.mouseButton.x, event.mouseButton.y);
 			}
 		}
 
-		if (mousePressed && clock.getElapsedTime().asMilliseconds() > 10 && shiftPressed) {
+		if (rMousePressed && clock.getElapsedTime().asMilliseconds() > 10) {
 			for (int i = 0; i < 30; i++){
-				sandbox.add(
+				sandbox.insert(
 					mousePosition + Vec2::random_rad(cursorSize),
-					particleSize, true, sf::Color(20,20,255));
-					//!shiftPressed,
-					//(shiftPressed ? sf::Color(90,50,20) : sf::Color(20,20,255)));
+					particleSize, false, sf::Color(90,50,20));
 			}
 
 			clock.restart();
 			statElement.objectAmountUpdate(sandbox.getObjectAmount());
 		}
-
-		else if (mousePressed){
+		else if (lMousePressed){
 			selector.select(mousePosition, cursorSize);
 
 			for( auto &i : selector.getSelected())
@@ -204,10 +131,6 @@ int main(int argc, char** argv)
 			statElement.setWinStatus(true);
 		}
 
-		// for (int i = 0; i < 6; i++)
-		// 	std::cout << sandbox.getSimResult(i) << std::setw(6);
-		// std::cout << "\n";
-		//std::cout << "Body: pos:" << debugBuffer->getPos() << ", oldPos:" << debugBuffer->getOldPos() << "\n";
 
 		statElement.update(event);
 
@@ -215,16 +138,11 @@ int main(int argc, char** argv)
         oglGraphics.drawAxes();
 
 		window.draw(sandbox_draw);
-		// if (dragEnable) {
-		// 	dragBuffer.second->move(mousePosition);
-		// }
+
 		window.pushGLStates();
 		window.draw(statElement);
 		window.popGLStates();
-		if (dragEnable) {
-			dragBuffer.second->move(mousePosition);
-		}
-		oglGraphics.drawCursor(mousePosition.x, window.getSize().y - mousePosition.y, cursorSize, 20, shiftPressed);
+		oglGraphics.drawCursor(mousePosition.x, window.getSize().y - mousePosition.y, cursorSize, 20, false);
 		window.display();
 	}
 }

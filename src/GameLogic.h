@@ -2,7 +2,7 @@
 
 #include "PhysicSolver2d.h"
 
-class GameLogic
+class GameLogic //WIP
 {
 private:
     PhysicSolver2d& sandbox;
