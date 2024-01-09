@@ -54,7 +54,7 @@ void ChunkGrid::update_collision() {
 }
 
 void ChunkGrid::update_collision_mt() {
-    #pragma omp parallel for num_threads(omp_get_num_procs()/2)
+    #pragma omp parallel for num_threads(6)//omp_get_num_procs()/2)
     for (int x{ 1 }; x < grid_width - 1; x++)
         for (int y{ 1 }; y < grid_height - 1; y++) {
             Chunk& cell = grid.at(x + y * grid_width);
@@ -73,7 +73,7 @@ void ChunkGrid::solve_collision(Chunk& central_chunk, Chunk& neighboring_chunk) 
         for (auto& j : neighboring_chunk)
         {
             if (&i != &j) {
-                if (collision_type == DEFAULT) {
+                if (collision_type == solvingMethod::DEFAULT) {
                     Vec2 diff = i->getPos() - j->getPos();
                     float diffLen = diff.length();
                     float dist = diffLen - (i->getRadius() + j->getRadius());
@@ -83,10 +83,10 @@ void ChunkGrid::solve_collision(Chunk& central_chunk, Chunk& neighboring_chunk) 
                         if (j->isKinematic) j->current_position += transform;
                     }
                 }
-                else if (collision_type == FUNC) {
+                else if (collision_type == solvingMethod::FUNC) {
                     collision_function(i, j);
                 }
-                else if (collision_type == LAMBDA) {
+                else if (collision_type == solvingMethod::LAMBDA) {
                     collision_lambda(i, j);
                 }
             }
@@ -132,7 +132,7 @@ PhysicSolver2d& PhysicSolver2d::insert(Vec2 position, float size, bool isKinemat
         PhysicBody2d* obj = new PhysicBody2d(position, size, isKinematic, color);
         objects.push_back(obj);
         grid.updateChunkSize(obj);
-        grid.assignGrid(objects);
+        // grid.assignGrid(objects);
     }
     return *this;
 }

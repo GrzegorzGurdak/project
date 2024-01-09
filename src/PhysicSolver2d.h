@@ -78,10 +78,10 @@ public:
 
     int count();
 
-    void set_collision_def() { collision_type = DEFAULT; }
-    void set_collision() { collision_type = NONE; }
-    void set_collision(void (*fun)(PhysicBody2d*, PhysicBody2d*)) { collision_function = fun; collision_type = FUNC; }
-    void set_collision(std::function<void(PhysicBody2d*, PhysicBody2d*)> fun) { collision_lambda = fun; collision_type = LAMBDA; }
+    void set_collision_def() { collision_type = solvingMethod::DEFAULT; }
+    void set_collision() { collision_type = solvingMethod::NONE; }
+    void set_collision(void (*fun)(PhysicBody2d*, PhysicBody2d*)) { collision_function = fun; collision_type = solvingMethod::FUNC; }
+    void set_collision(std::function<void(PhysicBody2d*, PhysicBody2d*)> fun) { collision_lambda = fun; collision_type = solvingMethod::LAMBDA; }
 
     std::vector<Chunk>& getGrid() { return grid; }
     const std::vector<Chunk>& getGrid() const { return grid; }
@@ -99,7 +99,7 @@ protected:
     int window_width;
     int window_height;
 
-    enum { FUNC, NONE, DEFAULT, LAMBDA } collision_type{ DEFAULT };
+    enum class solvingMethod { FUNC, NONE, DEFAULT, LAMBDA } collision_type{ solvingMethod::DEFAULT };
     void (*collision_function)(PhysicBody2d*, PhysicBody2d*);
     std::function<void(PhysicBody2d*, PhysicBody2d*)> collision_lambda;
 

@@ -95,27 +95,29 @@ namespace PhysicExamples {
 		}
 
 		PhysicSolver2d* game(Vec2 windowSize, int ballSize = 10) {
-			PhysicSolver2d* sandbox = new PhysicSolver2d(ChunkGrid(ballSize, (int)windowSize.x, (int)windowSize.y));
+			PhysicSolver2d* sandbox = new PhysicSolver2d(ChunkGrid(ballSize * 2, (int)windowSize.x, (int)windowSize.y));
 			sandbox->set_constraints();
 
-			float diff = float(ballSize);
+			float diff = float(ballSize) * 1.73;
+			std::cout << "grid size:( " << windowSize.x/diff << " , " << windowSize.y/diff << " )" << std::endl;
 
-			for (int i=0; i<windowSize.x; i += (int)diff){
-				for (int j = 0; j < windowSize.y; j += (int)diff) {
-					if ((i - 570) * (i - 570) + (j - 570) * (j - 570) > 100 * 100 && (i - 170) * (i - 170) + (j - 170) * (j - 170) > 100 * 100)
+			for (float i=0; i<windowSize.x; i += diff){
+				std::cout << i << " < " << windowSize.x << std::endl;
+				for (float j = 0; j < windowSize.y; j += diff) {
+					// if ((i - 570) * (i - 570) + (j - 570) * (j - 570) > 100 * 100 && (i - 170) * (i - 170) + (j - 170) * (j - 170) > 100 * 100)
 						sandbox->insert(Vec2(i, j), float(ballSize), false, sf::Color(90,50,20));
 				}
 			}
 
-			diff = ballSize * 2 + 0.1f;
+			// diff = ballSize * 2 + 0.1f;
 
-			for (float i = 50; i < 400; i+=diff){
-				for (float j = 50; j < 400; j += diff) {
-					if ( (i - 170) * (i - 170) + (j - 170) * (j - 170) < 99 * 99) {
-						sandbox->insert(Vec2(i, j), float(ballSize), true, sf::Color(20,20,255));
-					}
-				}
-			}
+			// for (float i = 50; i < 400; i+=diff){
+			// 	for (float j = 50; j < 400; j += diff) {
+			// 		if ( (i - 170) * (i - 170) + (j - 170) * (j - 170) < 99 * 99) {
+			// 			sandbox->insert(Vec2(i, j), float(ballSize), true, sf::Color(20,20,255));
+			// 		}
+			// 	}
+			// }
 
 			// std::vector<std::vector<PhysicBody2d*>> pBs;
 			// //int sizeX = 10;
