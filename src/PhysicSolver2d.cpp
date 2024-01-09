@@ -198,13 +198,13 @@ void PhysicSolver2d::update_acceleration() {
 void PhysicSolver2d::update_constraints() {
     if (constraint_type == DEFAULT) {
         Vec2 sphere_centre(350, 350);
-        float radius = 300;
+        float sphere_radius = 300;
         for (auto& i : objects) {
             if (i->isKinematic) {
                 Vec2 diff = i->getPos() - sphere_centre;
                 float diffLen = diff.length();
-                if (diffLen + i->radius > radius) {
-                    i->current_position -= diff / diffLen * (diffLen + i->radius - radius);
+                if (diffLen + i->radius > sphere_radius) {
+                    i->current_position -= diff / diffLen * (diffLen + i->radius - sphere_radius);
                 }
             }
         }

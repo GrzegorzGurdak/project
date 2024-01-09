@@ -116,6 +116,8 @@ int main(int argc, char** argv)
 			for( auto &i : selector.getSelected())
 				if(!i->isKinematic)
 					sandbox.deleteObject(i);
+
+			statElement.objectAmountUpdate(sandbox.getObjectAmount());
 		}
 
 		if (!paused) {
